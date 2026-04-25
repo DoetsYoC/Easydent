@@ -21,7 +21,7 @@ if ($practitionerId && $practiceId) {
 
     $db   = getDB();
     $stmt = $db->prepare("
-        SELECT id, practice_id, display_name, pin_hash, failed_attempts, locked_until, active
+        SELECT id, practice_id, role, display_name, pin_hash, failed_attempts, locked_until, active
         FROM users WHERE id = ? AND practice_id = ? AND role = 'practitioner' LIMIT 1
     ");
     $stmt->execute([$practitionerId, $practiceId]);
