@@ -5,7 +5,15 @@ require_once __DIR__ . '/config/auth.php';
 
 requireAuth('/easydent/auth/login.php');
 
-$user  = currentUser();
+$user = currentUser();
+
+// Agenda is alleen voor practitioners — managers en admins gaan naar de beheerpagina
+if ($user['role'] !== 'practitioner') {
+    $date = $_GET['date'] ?? date('Y-m-d');
+    header('Location: /easydent/admin/appointments.php?date=' . urlencode($date));
+    exit;
+}
+
 $db    = getDB();
 $lang  = currentLang();
 $today = date('Y-m-d');
@@ -20,42 +28,20 @@ $prevDate = date('Y-m-d', strtotime($selectedDate . ' -1 day'));
 $nextDate = date('Y-m-d', strtotime($selectedDate . ' +1 day'));
 $isToday  = $selectedDate === $today;
 
-$isPractitioner = $user['role'] === 'practitioner';
-
-if ($isPractitioner) {
-    $stmt = $db->prepare("
-        SELECT a.*,
-               CONCAT(p.first_name, ' ', p.last_name) AS patient_name,
-               p.birth_date,
-               tt.name_{$lang} AS type_name
-        FROM appointments a
-        JOIN patients p ON p.id = a.patient_id
-        LEFT JOIN treatment_types tt ON tt.id = a.treatment_type_id
-        WHERE a.practitioner_id = ?
-          AND DATE(a.scheduled_at) = ?
-          AND a.status != 'cancelled'
-        ORDER BY a.scheduled_at
-    ");
-    $stmt->execute([$user['id'], $selectedDate]);
-} else {
-    $practiceFilter = $user['role'] === 'super_admin' ? '' : 'AND a.practice_id = ' . (int)$user['practice_id'];
-    $stmt = $db->prepare("
-        SELECT a.*,
-               CONCAT(p.first_name, ' ', p.last_name) AS patient_name,
-               p.birth_date,
-               tt.name_{$lang} AS type_name,
-               u.display_name AS practitioner_name
-        FROM appointments a
-        JOIN patients p ON p.id = a.patient_id
-        JOIN users u    ON u.id = a.practitioner_id
-        LEFT JOIN treatment_types tt ON tt.id = a.treatment_type_id
-        WHERE DATE(a.scheduled_at) = ?
-          AND a.status != 'cancelled'
-          $practiceFilter
-        ORDER BY a.scheduled_at
-    ");
-    $stmt->execute([$selectedDate]);
-}
+$stmt = $db->prepare("
+    SELECT a.*,
+           CONCAT(p.first_name, ' ', p.last_name) AS patient_name,
+           p.birth_date,
+           tt.name_{$lang} AS type_name
+    FROM appointments a
+    JOIN patients p ON p.id = a.patient_id
+    LEFT JOIN treatment_types tt ON tt.id = a.treatment_type_id
+    WHERE a.practitioner_id = ?
+      AND DATE(a.scheduled_at) = ?
+      AND a.status != 'cancelled'
+    ORDER BY a.scheduled_at
+");
+$stmt->execute([$user['id'], $selectedDate]);
 $appointments = $stmt->fetchAll();
 ?><!DOCTYPE html>
 <html lang="<?= $lang ?>">
