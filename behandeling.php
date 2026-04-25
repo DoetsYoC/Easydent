@@ -309,7 +309,7 @@ main { max-width: 800px; margin: 0 auto; padding: 1.5rem; }
 
 <?php else: ?>
 
-<form method="post" id="treatmentForm">
+<form method="post" id="treatmentForm" novalidate>
   <input type="hidden" name="csrf_token" value="<?= $csrf ?>">
   <input type="hidden" name="action" value="save_draft" id="formAction">
 
@@ -482,36 +482,44 @@ function renderItem(id) {
   row.className  = 'item-row';
   btn.className  = 'toggle-btn';
 
+  const hideArea = (area) => {
+    if (!area) return;
+    area.style.display = 'none';
+    area.querySelectorAll('input,textarea').forEach(el => el.setAttribute('disabled', ''));
+  };
+  const showArea = (area) => {
+    if (!area) return;
+    area.style.display = 'flex';
+    area.querySelectorAll('input,textarea').forEach(el => el.removeAttribute('disabled'));
+  };
+
   if (state === 'blocked') {
     row.classList.add('state-blocked');
     btn.classList.add('is-blocked');
     icon.textContent  = '⊘';
     label.textContent = '<?= addslashes(__('blocked_label')) ?>';
     if (hidden) hidden.value = 'not_confirmed';
-    if (fArea)  fArea.style.display  = 'none';
-    if (mWrap)  mWrap.style.display  = 'none';
+    hideArea(fArea); hideArea(mWrap);
   } else if (state === 'confirmed') {
     row.classList.add('state-confirmed');
     btn.classList.add('is-confirmed');
     icon.textContent  = '✓';
     label.textContent = '<?= addslashes(__('confirmed_label')) ?>';
     if (hidden) hidden.value = 'confirmed';
-    if (fArea)  fArea.style.display  = 'flex';
+    showArea(fArea);
     checkMotivation(id);
   } else if (state === 'skipped') {
     btn.classList.add('is-skipped');
     icon.textContent  = '—';
     label.textContent = '<?= addslashes(__('skipped_label')) ?>';
     if (hidden) hidden.value = 'not_confirmed';
-    if (fArea)  fArea.style.display  = 'none';
-    if (mWrap)  mWrap.style.display  = 'none';
+    hideArea(fArea); hideArea(mWrap);
   } else {
     // proposed / available
     icon.textContent  = '+';
     label.textContent = '<?= addslashes(__('confirm_btn')) ?>';
     if (hidden) hidden.value = 'not_confirmed';
-    if (fArea)  fArea.style.display  = 'none';
-    if (mWrap)  mWrap.style.display  = 'none';
+    hideArea(fArea); hideArea(mWrap);
   }
 }
 
@@ -572,14 +580,16 @@ function toggleItem(id) {
 }
 
 function checkMotivation(id) {
-  const row       = document.getElementById('row_' + id);
-  const input     = document.getElementById('factorInput_' + id);
-  const mWrap     = document.getElementById('motivationWrap_' + id);
+  const row      = document.getElementById('row_' + id);
+  const input    = document.getElementById('factorInput_' + id);
+  const mWrap    = document.getElementById('motivationWrap_' + id);
   if (!input || !mWrap) return;
-  const motReq    = row?.dataset.motRequired === '1';
-  const fDefault  = parseFloat(row?.dataset.factorDefault || '2.3');
-  const val       = parseFloat(input.value);
-  mWrap.style.display = (motReq || val > fDefault) ? 'block' : 'none';
+  const motReq   = row?.dataset.motRequired === '1';
+  const fDefault = parseFloat(row?.dataset.factorDefault || '2.3');
+  const val      = parseFloat(input.value);
+  const show     = motReq || val > fDefault;
+  mWrap.style.display = show ? 'block' : 'none';
+  mWrap.querySelectorAll('textarea').forEach(el => show ? el.removeAttribute('disabled') : el.setAttribute('disabled', ''));
 }
 
 function setAction(action) {
