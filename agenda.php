@@ -82,6 +82,7 @@ main { max-width: 760px; margin: 2rem auto; padding: 0 1.5rem; }
 }
 .date-label span { display: block; font-size: .8rem; font-weight: 400; color: var(--gray-5); margin-top: .1rem; }
 .btn-today { background: var(--teal) !important; color: #fff !important; border-color: var(--teal) !important; }
+.btn-today.btn-hidden { visibility: hidden; pointer-events: none; }
 input[type=date].date-pick {
   padding: .4rem .7rem; border: 1.5px solid var(--gray-3); border-radius: 7px;
   font-size: .85rem; color: var(--navy); background: #fff; cursor: pointer;
@@ -135,9 +136,7 @@ input[type=date].date-pick:focus { outline: none; border-color: var(--teal); }
       <?php endif ?>
     </div>
     <a href="?date=<?= $nextDate ?>" title="<?= __('next_day') ?>">&#8594;</a>
-    <?php if (!$isToday): ?>
-      <a href="?date=<?= $today ?>" class="btn-today"><?= __('today_btn') ?></a>
-    <?php endif ?>
+    <a href="?date=<?= $today ?>" class="btn-today<?= $isToday ? ' btn-hidden' : '' ?>"><?= __('today_btn') ?></a>
     <input type="date" class="date-pick" value="<?= $selectedDate ?>"
            onchange="location.href='?date='+this.value">
   </div>
