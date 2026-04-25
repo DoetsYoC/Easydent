@@ -166,12 +166,15 @@ $suggestionCol = 'suggestion_' . $lang;
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title><?= __('treatment_title') ?> — Easydent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --navy:    #1a2e4a;
-  --teal:    #00b4a0;
-  --teal-l:  #f0fdfa;
+  --teal:    #3aafa9;
+  --teal-l:  #e8f5f4;
   --teal-d:  #009688;
   --green:   #16a34a;
   --green-l: #dcfce7;
@@ -185,7 +188,7 @@ $suggestionCol = 'suggestion_' . $lang;
   --gray-7:  #374151;
   --shadow:  0 1px 4px rgba(0,0,0,.08);
 }
-body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray-2); color: var(--navy); min-height: 100vh; }
+body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: var(--gray-2); color: var(--navy); min-height: 100vh; -webkit-font-smoothing: antialiased; }
 
 /* Header */
 .topbar { background: var(--navy); padding: .9rem 1.5rem; display: flex; align-items: center; gap: 1rem; }

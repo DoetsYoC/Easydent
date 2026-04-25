@@ -49,10 +49,13 @@ $appointments = $stmt->fetchAll();
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title><?= __('agenda_title') ?> — Easydent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root { --navy: #1a2e4a; --teal: #00b4a0; --teal-l: #f0fdfa; --gray-1: #f8fafc; --gray-2: #f1f5f9; --gray-3: #e2e8f0; --gray-5: #64748b; --shadow: 0 1px 4px rgba(0,0,0,.08); }
-body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray-2); color: var(--navy); min-height: 100vh; }
+:root { --navy: #1a2e4a; --teal: #3aafa9; --teal-l: #e8f5f4; --gray-1: #f8fafc; --gray-2: #f1f5f9; --gray-3: #e2e8f0; --gray-5: #64748b; --shadow: 0 1px 4px rgba(0,0,0,.08); }
+body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: var(--gray-2); color: var(--navy); min-height: 100vh; -webkit-font-smoothing: antialiased; }
 header { background: var(--navy); padding: .9rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
 .header-logo { display: flex; align-items: center; gap: .65rem; color: #fff; text-decoration: none; }
 .logo-mark { width: 34px; height: 34px; background: var(--teal); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .85rem; color: #fff; }

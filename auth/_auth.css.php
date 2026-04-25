@@ -1,7 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: #f0f4f8;
+  font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background: #f2f5f8;
   min-height: 100vh;
   display: flex;
   align-items: center;
@@ -25,7 +27,7 @@ body {
 }
 .logo-mark {
   width: 44px; height: 44px;
-  background: #00b4a0;
+  background: #3aafa9;
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   color: #fff; font-weight: 800; font-size: 1rem;
@@ -68,7 +70,7 @@ select {
 }
 input:focus, select:focus {
   outline: none;
-  border-color: #00b4a0;
+  border-color: #3aafa9;
   box-shadow: 0 0 0 3px rgba(0,180,160,.15);
 }
 .btn {
@@ -86,7 +88,7 @@ input:focus, select:focus {
 }
 .btn:active { transform: scale(.98); }
 .btn:hover  { opacity: .88; }
-.btn-primary  { background: #00b4a0; color: #fff; margin-top: .25rem; }
+.btn-primary  { background: #3aafa9; color: #fff; margin-top: .25rem; }
 .btn-secondary { background: #1a2e4a; color: #fff; margin-top: .5rem; }
 .btn-outline  {
   background: transparent;
@@ -94,7 +96,7 @@ input:focus, select:focus {
   color: #374151;
   margin-top: .5rem;
 }
-.btn-outline:hover { border-color: #00b4a0; color: #00b4a0; opacity: 1; }
+.btn-outline:hover { border-color: #3aafa9; color: #3aafa9; opacity: 1; }
 
 .auth-footer {
   margin-top: 1.5rem;
@@ -103,7 +105,7 @@ input:focus, select:focus {
   color: #64748b;
 }
 .auth-footer a {
-  color: #00b4a0;
+  color: #3aafa9;
   text-decoration: none;
   font-weight: 600;
 }
@@ -129,9 +131,9 @@ input:focus, select:focus {
   transition: border-color .15s, background .15s;
 }
 .practitioner-btn:hover {
-  border-color: #00b4a0;
-  background: #f0fdfa;
-  color: #00b4a0;
+  border-color: #3aafa9;
+  background: #e8f5f4;
+  color: #3aafa9;
 }
 .practitioner-btn .initials {
   display: block;
@@ -159,7 +161,7 @@ input:focus, select:focus {
   background: #fff;
   transition: background .15s, border-color .15s;
 }
-.pin-dot.filled { background: #00b4a0; border-color: #00b4a0; }
+.pin-dot.filled { background: #3aafa9; border-color: #3aafa9; }
 
 .pin-pad {
   display: grid;
@@ -181,7 +183,7 @@ input:focus, select:focus {
   transition: background .1s, border-color .1s;
   user-select: none;
 }
-.pin-key:hover  { background: #f0fdfa; border-color: #00b4a0; }
+.pin-key:hover  { background: #e8f5f4; border-color: #3aafa9; }
 .pin-key:active { background: #ccfbf1; }
 .pin-key.del    { font-size: .85rem; color: #ef4444; }
 
@@ -192,5 +194,5 @@ input:focus, select:focus {
   text-decoration: none; color: #64748b; border: 1.5px solid #e2e8f0;
   transition: all .15s;
 }
-.lang-btn:hover { border-color: #00b4a0; color: #00b4a0; }
-.lang-btn.lang-active { border-color: #00b4a0; color: #00b4a0; background: #f0fdfa; }
+.lang-btn:hover { border-color: #3aafa9; color: #3aafa9; }
+.lang-btn.lang-active { border-color: #3aafa9; color: #3aafa9; background: #e8f5f4; }

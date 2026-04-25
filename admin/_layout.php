@@ -9,26 +9,33 @@ $lang = currentLang();
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title><?= __($pageTitle ?? 'nav_dashboard') ?> — Easydent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --navy:   #1a2e4a;
-  --teal:   #00b4a0;
-  --teal-l: #ccfbf1;
+  --teal:   #3aafa9;
+  --teal-l: #e8f5f4;
   --gray-1: #f8fafc;
-  --gray-2: #f1f5f9;
-  --gray-3: #e2e8f0;
+  --gray-2: #f4f6f9;
+  --gray-3: #e4e9f0;
   --gray-5: #64748b;
   --gray-7: #374151;
   --red:    #dc2626;
-  --shadow: 0 1px 4px rgba(0,0,0,.08);
+  --shadow: 0 1px 6px rgba(0,0,0,.06);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.08);
 }
 body {
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
   background: var(--gray-2);
   color: var(--navy);
   min-height: 100vh;
   display: flex;
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 .sidebar {
   width: 230px;
@@ -91,22 +98,23 @@ nav { flex: 1; padding: 1rem 0; }
 .topbar h2 { font-size: 1.1rem; font-weight: 700; }
 .topbar-right { display: flex; align-items: center; gap: 1rem; }
 .page-content { padding: 2rem; flex: 1; }
-.card { background: #fff; border-radius: 10px; box-shadow: var(--shadow); border: 1px solid var(--gray-3); }
-.card-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--gray-3); display: flex; align-items: center; justify-content: space-between; }
-.card-header h3 { font-size: 1rem; font-weight: 600; }
+.card { background: #fff; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--gray-3); }
+.card-header { padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--gray-3); display: flex; align-items: center; justify-content: space-between; }
+.card-header h3 { font-size: .95rem; font-weight: 600; letter-spacing: -.01em; }
 .card-body { padding: 1.5rem; }
-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
-th { background: var(--gray-1); padding: .65rem 1rem; text-align: left; font-size: .78rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--gray-5); border-bottom: 1px solid var(--gray-3); }
-td { padding: .75rem 1rem; border-bottom: 1px solid var(--gray-3); vertical-align: middle; }
+table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+th { background: var(--gray-1); padding: .6rem 1rem; text-align: left; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--gray-5); border-bottom: 1px solid var(--gray-3); }
+td { padding: .8rem 1rem; border-bottom: 1px solid var(--gray-3); vertical-align: middle; color: var(--gray-7); }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: var(--gray-1); }
-.btn { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem 1rem; border: none; border-radius: 7px; font-size: .875rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity .15s; }
-.btn:hover { opacity: .85; }
+.btn { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem 1.1rem; border: none; border-radius: 8px; font-size: .85rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity .15s, box-shadow .15s; }
+.btn:hover { opacity: .88; }
 .btn-primary  { background: var(--teal); color: #fff; }
+.btn-primary:hover { opacity: 1; box-shadow: 0 2px 8px rgba(58,175,169,.35); }
 .btn-danger   { background: var(--red);  color: #fff; }
 .btn-outline  { background: #fff; border: 1.5px solid var(--gray-3); color: var(--gray-7); }
 .btn-outline:hover { border-color: var(--teal); color: var(--teal); opacity: 1; }
-.btn-sm { padding: .3rem .7rem; font-size: .8rem; }
+.btn-sm { padding: .3rem .75rem; font-size: .78rem; }
 .badge { display: inline-block; padding: .2rem .55rem; border-radius: 99px; font-size: .72rem; font-weight: 700; letter-spacing: .03em; }
 .badge-green { background: #d1fae5; color: #065f46; }
 .badge-red   { background: #fee2e2; color: #991b1b; }

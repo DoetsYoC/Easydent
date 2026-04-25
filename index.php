@@ -20,8 +20,8 @@ $lang = currentLang();
 <title>Easydent — <?= __('app_subtitle') ?></title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root { --navy: #1a2e4a; --teal: #00b4a0; --teal-l: #f0fdfa; --gray-2: #f1f5f9; --gray-3: #e2e8f0; --gray-5: #64748b; }
-body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray-2); color: var(--navy); min-height: 100vh; }
+:root { --navy: #1a2e4a; --teal: #3aafa9; --teal-l: #e8f5f4; --gray-2: #f1f5f9; --gray-3: #e2e8f0; --gray-5: #64748b; }
+body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: var(--gray-2); color: var(--navy); min-height: 100vh; -webkit-font-smoothing: antialiased; }
 header { background: var(--navy); padding: .9rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
 .header-logo { display: flex; align-items: center; gap: .65rem; color: #fff; text-decoration: none; }
 .logo-mark { width: 34px; height: 34px; background: var(--teal); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .85rem; color: #fff; }
