@@ -5,7 +5,7 @@
     <div style="font-size:3rem;margin-bottom:1rem;">🚫</div>
     <h2 style="margin-bottom:.5rem;">Geen toegang</h2>
     <p style="color:#64748b;margin-bottom:1.5rem;">U heeft niet de juiste rechten voor deze pagina.</p>
-    <a href="/easydent/admin/index.php" class="btn btn-primary">Terug naar dashboard</a>
+    <a href="/easydent/index.php" class="btn btn-primary">Terug</a>
   </div>
 </div>
 <?php include __DIR__ . '/_layout_end.php'; ?>
