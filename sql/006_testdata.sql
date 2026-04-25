@@ -12,9 +12,11 @@ DELETE FROM patients WHERE charly_id BETWEEN '10001' AND '10025';
 -- Context: zoek eerst een practitioner, gebruik diens praktijk
 -- (zo werkt het ook als de eerste praktijk geen practitioners heeft)
 -- ============================================================
-SET @pr1 = (SELECT id FROM users WHERE role = 'practitioner' AND active = 1 ORDER BY id LIMIT 1);
+SET @pr1 = (SELECT id FROM users WHERE display_name = 'Dr. Max Mustermann' AND role = 'practitioner' AND active = 1 LIMIT 1);
+SET @pr2 = (SELECT id FROM users WHERE display_name = 'Dr. Julia Hoffmann'  AND role = 'practitioner' AND active = 1 LIMIT 1);
 SET @pid = (SELECT practice_id FROM users WHERE id = @pr1);
-SET @pr2 = (SELECT id FROM users WHERE role = 'practitioner' AND practice_id = @pid AND active = 1 AND id != @pr1 ORDER BY id LIMIT 1);
+-- Fallback: als één van beiden niet bestaat, gebruik de ander
+SET @pr1 = IF(@pr1 IS NULL OR @pr1 = 0, @pr2, @pr1);
 SET @pr2 = IF(@pr2 IS NULL OR @pr2 = 0, @pr1, @pr2);
 
 -- Behandeltypen ophalen (NULL als seed nog niet is uitgevoerd — geen probleem)
