@@ -45,10 +45,59 @@ if (!empty($user['practice_id'])) {
     } catch (Throwable) {}
 }
 
-$lang     = currentLang();
+$lang      = currentLang();
 $langLabel = match($lang) { 'nl' => 'Nederlands', 'en' => 'Engels', default => 'Duits' };
 
-$issueBody  = ($body !== '' ? $body . "\n\n" : '');
+// ── Vertaling naar Nederlands via MyMemory API ─────────────────────────────
+function translateToNl(string $text, string $fromLang): string
+{
+    if ($text === '' || $fromLang === 'nl') return $text;
+
+    $langpair = $fromLang . '|nl';
+    $url      = 'https://api.mymemory.translated.net/get?q=' . urlencode($text) . '&langpair=' . urlencode($langpair);
+
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 8,
+        CURLOPT_SSL_VERIFYPEER => true,
+        CURLOPT_USERAGENT      => 'Easydent-App',
+    ]);
+    $result = curl_exec($ch);
+    curl_close($ch);
+
+    if (!$result) return $text;
+
+    $data = json_decode($result, true);
+    $translated = $data['responseData']['translatedText'] ?? '';
+
+    return ($translated !== '' && $data['responseStatus'] === 200) ? $translated : $text;
+}
+
+$needsTranslation = ($lang !== 'nl');
+$titleNl          = $needsTranslation ? translateToNl($title, $lang) : $title;
+$bodyNl           = ($needsTranslation && $body !== '') ? translateToNl($body, $lang) : $body;
+
+// ── Issue titel: Nederlandse vertaling (origineel ernaast als anders) ──────
+$issueTitle = $needsTranslation && $titleNl !== $title
+    ? "{$titleNl} [{$title}]"
+    : $title;
+
+// ── Issue body opbouwen ────────────────────────────────────────────────────
+$issueBody = '';
+
+if ($needsTranslation) {
+    // Nederlandse vertaling eerst
+    if ($bodyNl !== '') {
+        $issueBody .= "## 🇳🇱 Vertaling ({$langLabel} → Nederlands)\n\n{$bodyNl}\n\n";
+    }
+    // Originele tekst eronder
+    $originalBlock = $title . ($body !== '' ? "\n\n" . $body : '');
+    $issueBody .= "## 🔤 Originele tekst ({$langLabel})\n\n{$originalBlock}\n\n";
+} else {
+    $issueBody .= ($body !== '' ? $body . "\n\n" : '');
+}
+
 $issueBody .= "---\n";
 $issueBody .= "**Ingediend door:** {$userName}" . ($practiceName !== '' ? " — {$practiceName}" : '') . " ({$userRole})\n";
 $issueBody .= "**Taal:** {$langLabel}\n";
@@ -61,7 +110,7 @@ curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
     CURLOPT_POSTFIELDS     => json_encode([
-        'title'  => $title,
+        'title'  => $issueTitle,
         'body'   => $issueBody,
         'labels' => ['feedback'],
     ]),
@@ -92,8 +141,8 @@ if ($httpCode !== 201) {
     exit;
 }
 
-$issue   = json_decode($response, true);
-$nodeId  = $issue['node_id']  ?? '';
+$issue    = json_decode($response, true);
+$nodeId   = $issue['node_id']  ?? '';
 $issueUrl = $issue['html_url'] ?? '';
 
 // ── Stap 2: Issue toevoegen aan project board ──────────────────────────────
@@ -120,7 +169,7 @@ if ($nodeId && defined('GITHUB_PROJECT_ID') && GITHUB_PROJECT_ID !== '') {
     $addResponse = curl_exec($ch);
     curl_close($ch);
 
-    $addData   = json_decode($addResponse, true);
+    $addData    = json_decode($addResponse, true);
     $itemNodeId = $addData['data']['addProjectV2ItemById']['item']['id'] ?? '';
 
     // ── Stap 3: Status instellen op "Feedback" ─────────────────────────────
