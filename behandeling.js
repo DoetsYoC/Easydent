@@ -696,6 +696,7 @@ async function ajaxSave(action = 'save') {
     })
     .filter(m => m.reason);
   body.append('mandatory_skipped', JSON.stringify(mandatorySkipped));
+  body.append('selected_teeth', JSON.stringify(state.selectedTeeth));
 
   if (!state.sigDataUrl && state.sigHasData && state.sigCanvas) {
     state.sigDataUrl = state.sigCanvas.toDataURL('image/png');

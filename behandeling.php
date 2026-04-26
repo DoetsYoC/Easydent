@@ -49,8 +49,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['_ajax'])) {
 
     $mandatorySkipped = json_decode($_POST['mandatory_skipped'] ?? '[]', true) ?: [];
     $notes = json_encode(['intake' => $intake, 'signal' => $signal, 'mandatory_skipped' => $mandatorySkipped]);
-    $db->prepare("UPDATE treatment_sessions SET notes=?,consent_signed=?,consent_at=?,consent_signature=? WHERE id=?")
-       ->execute([$notes, $consentSigned, $consentSigned ? date('Y-m-d H:i:s') : null, $signatureData ?: null, $sid]);
+
+    $rawTeeth = json_decode($_POST['selected_teeth'] ?? '[]', true);
+    $selectedTeeth = is_array($rawTeeth)
+        ? array_values(array_filter($rawTeeth, fn($t) => is_array($t) && isset($t['toothNumber']) && is_string($t['toothNumber']) && $t['toothNumber'] !== ''))
+        : [];
+    $selectedTeethJson = empty($selectedTeeth) ? null : json_encode($selectedTeeth, JSON_UNESCAPED_UNICODE);
+
+    $db->prepare("UPDATE treatment_sessions SET notes=?,consent_signed=?,consent_at=?,consent_signature=?,selected_teeth=? WHERE id=?")
+       ->execute([$notes, $consentSigned, $consentSigned ? date('Y-m-d H:i:s') : null, $signatureData ?: null, $selectedTeethJson, $sid]);
 
     if ($action === 'complete') {
         $db->prepare("UPDATE treatment_sessions SET status='completed' WHERE id=?")->execute([$sid]);
@@ -141,6 +148,11 @@ if (!empty($sess['notes'])) {
     foreach ($nd['mandatory_skipped'] ?? [] as $m) {
         $savedMandSkipped[(int)$m['id']] = $m['reason'] ?? '';
     }
+}
+$savedTeeth = [];
+if (!empty($sess['selected_teeth'])) {
+    $decoded = json_decode($sess['selected_teeth'], true);
+    $savedTeeth = is_array($decoded) ? $decoded : [];
 }
 
 $nc  = 'name_'       . $lang;
@@ -697,6 +709,7 @@ const APP = {
   treatDate:   '<?= date('d-m-Y', strtotime($appt['scheduled_at'])) ?>',
   treatType:   '<?= addslashes($appt['type_name'] ?? '') ?>',
   toothSelectionMode: '<?= $appt['tooth_selection_mode'] ?? 'not_applicable' ?>',
+  selectedTeeth: <?= json_encode($savedTeeth, JSON_UNESCAPED_UNICODE) ?>,
 };
 
 const T = {
@@ -772,6 +785,7 @@ const state = {
   sigDrawing: false,
   sigHasData: false,
   sigDataUrl: null,  // gecachte data URL — canvas-inhoud gaat verloren op tablets
+  selectedTeeth: Array.isArray(APP.selectedTeeth) ? APP.selectedTeeth.slice() : [],
 };
 
 // Initialize items
