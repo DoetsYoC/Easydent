@@ -264,9 +264,9 @@ footer {
     </div>
   </a>
   <div class="lang-switcher">
-    <button class="lang-btn active" onclick="setLang('de')">DE</button>
-    <button class="lang-btn"        onclick="setLang('nl')">NL</button>
-    <button class="lang-btn"        onclick="setLang('en')">EN</button>
+    <button class="lang-btn active" onclick="setLang('de')"><svg width="16" height="11" viewBox="0 0 5 3" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;border-radius:1px;margin-right:3px"><rect width="5" height="1"/><rect y="1" width="5" height="1" fill="#D00"/><rect y="2" width="5" height="1" fill="#FFCE00"/></svg>DE</button>
+    <button class="lang-btn"        onclick="setLang('nl')"><svg width="16" height="11" viewBox="0 0 3 3" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;border-radius:1px;margin-right:3px"><rect width="3" height="1" fill="#AE1C28"/><rect y="1" width="3" height="1" fill="#fff"/><rect y="2" width="3" height="1" fill="#21468B"/></svg>NL</button>
+    <button class="lang-btn"        onclick="setLang('en')"><svg width="16" height="11" viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;border-radius:1px;margin-right:3px"><rect width="60" height="30" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#C8102E" stroke-width="4"/><path d="M30,0 V30 M0,15 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V30 M0,15 H60" stroke="#C8102E" stroke-width="6"/></svg>EN</button>
   </div>
 </header>
 
