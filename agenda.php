@@ -93,13 +93,24 @@ input[type=date].date-pick {
 input[type=date].date-pick:focus { outline: none; border-color: var(--teal); }
 
 .appt-card { background: #fff; border: 1px solid var(--gray-3); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow); display: flex; align-items: center; gap: 1.5rem; }
+.appt-card.st-completed { background: #f8fafc; border-color: #d1fae5; opacity: .85; }
+.appt-card.st-in-progress { border-color: var(--teal); border-width: 2px; }
 .appt-time { font-size: 1.5rem; font-weight: 800; color: var(--teal); white-space: nowrap; min-width: 60px; }
+.appt-card.st-completed .appt-time { color: var(--gray-5); }
 .appt-info { flex: 1; }
 .appt-patient { font-size: 1.05rem; font-weight: 700; margin-bottom: .2rem; }
 .appt-meta { font-size: .85rem; color: var(--gray-5); }
 .appt-type { display: inline-block; background: var(--teal-l); color: var(--teal); font-size: .78rem; font-weight: 700; padding: .2rem .55rem; border-radius: 99px; margin-top: .35rem; }
+.appt-status { display: inline-flex; align-items: center; gap: .3rem; font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 99px; margin-left: .5rem; }
+.appt-status.s-planned    { background: #eff6ff; color: #1d4ed8; }
+.appt-status.s-in-progress{ background: #d1fae5; color: #065f46; }
+.appt-status.s-completed  { background: #e0f2fe; color: #0369a1; }
 .btn-start { background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-size: .875rem; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; transition: opacity .15s; }
 .btn-start:hover { opacity: .85; }
+.btn-continue { background: #059669; color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-size: .875rem; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; transition: opacity .15s; }
+.btn-continue:hover { opacity: .85; }
+.btn-view { background: var(--gray-5); color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-size: .875rem; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; transition: opacity .15s; }
+.btn-view:hover { opacity: .85; }
 .empty-state { text-align: center; padding: 4rem 2rem; background: #fff; border-radius: 12px; border: 1px solid var(--gray-3); }
 .empty-state p { color: var(--gray-5); font-size: 1rem; }
 .badge-in-progress { background: #d1fae5; color: #065f46; font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 99px; margin-left: .5rem; }
@@ -152,29 +163,33 @@ input[type=date].date-pick:focus { outline: none; border-color: var(--teal); }
   <?php else: ?>
     <?php foreach ($appointments as $a): ?>
       <?php
-        $age = $a['birth_date'] ? floor((time() - strtotime($a['birth_date'])) / 31557600) : null;
-        $isInProgress = $a['status'] === 'in_progress';
+        $age         = $a['birth_date'] ? floor((time() - strtotime($a['birth_date'])) / 31557600) : null;
+        $status      = $a['status'];
+        $cardClass   = match($status) { 'completed' => 'st-completed', 'in_progress' => 'st-in-progress', default => '' };
+        $statusLabel = match($status) { 'in_progress' => __('appt_in_progress'), 'completed' => __('appt_completed'), default => __('appt_planned') };
+        $statusClass = match($status) { 'in_progress' => 's-in-progress', 'completed' => 's-completed', default => 's-planned' };
+        $btnLabel    = match($status) { 'in_progress' => __('continue_treatment'), 'completed' => __('view_treatment'), default => __('start_treatment') };
+        $btnClass    = match($status) { 'in_progress' => 'btn-continue', 'completed' => 'btn-view', default => 'btn-start' };
       ?>
-      <div class="appt-card">
-        <div class="appt-time"><?= date('H:i', strtotime($a['scheduled_at'])) ?></div>
+      <div class="appt-card <?= $cardClass ?>">
+        <div class="appt-time">
+          <?= date('H:i', strtotime($a['scheduled_at'])) ?>
+        </div>
         <div class="appt-info">
           <div class="appt-patient">
             <?= htmlspecialchars($a['patient_name']) ?>
-            <?php if ($isInProgress): ?><span class="badge-in-progress"><?= __('appt_in_progress') ?></span><?php endif ?>
+            <span class="appt-status <?= $statusClass ?>"><?= $statusLabel ?></span>
           </div>
           <div class="appt-meta">
             <?php if ($age !== null): ?><?= $age ?> <?= __('years_label') ?> &nbsp;·&nbsp; <?php endif ?>
             <?= $a['duration_min'] ?> <?= __('duration_min_label') ?>
-            <?php if (!$isPractitioner && !empty($a['practitioner_name'])): ?>
-              &nbsp;·&nbsp; <?= htmlspecialchars($a['practitioner_name']) ?>
-            <?php endif ?>
           </div>
           <?php if ($a['type_name']): ?>
             <span class="appt-type"><?= htmlspecialchars($a['type_name']) ?></span>
           <?php endif ?>
         </div>
-        <a href="/easydent/behandeling.php?appointment_id=<?= $a['id'] ?>" class="btn-start">
-          <?= __('start_treatment') ?>
+        <a href="/easydent/behandeling.php?appointment_id=<?= $a['id'] ?>" class="<?= $btnClass ?>">
+          <?= $btnLabel ?>
         </a>
       </div>
     <?php endforeach ?>
