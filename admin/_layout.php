@@ -96,7 +96,7 @@ nav { flex: 1; padding: 1rem 0; }
   box-shadow: var(--shadow);
 }
 .topbar h2 { font-size: 1.1rem; font-weight: 700; }
-.topbar-right { display: flex; align-items: center; gap: 1rem; margin-right: 6rem; }
+.topbar-right { display: flex; align-items: center; gap: 1rem; }
 .page-content { padding: 2rem; flex: 1; }
 .card { background: #fff; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--gray-3); }
 .card-header { padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--gray-3); display: flex; align-items: center; justify-content: space-between; }
