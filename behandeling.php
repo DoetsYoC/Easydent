@@ -391,6 +391,38 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
 
 /* ── No type ── */
 .no-type{background:#fff;border:1px solid var(--gray-3);border-radius:12px;padding:3rem 2rem;text-align:center;color:var(--gray-5)}
+
+/* ── Dental Chart Component ── */
+.dc-wrap{display:flex;gap:1.25rem;align-items:flex-start;flex-wrap:wrap}
+.dc-chart-area{flex:0 0 auto;overflow-x:auto;padding-bottom:.25rem}
+.dc-jaw-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-5);text-align:center;padding:.35rem 0}
+.dc-rows{display:inline-flex;flex-direction:column;gap:0}
+.dc-row{display:flex;align-items:stretch}
+.dc-half{display:flex;gap:2px}
+.dc-midline{width:6px;background:var(--gray-3);border-radius:3px;margin:0 3px;flex-shrink:0}
+.dc-gumline{display:flex;justify-content:space-between;padding:3px 0;background:var(--gray-2);border-top:1px solid var(--gray-3);border-bottom:1px solid var(--gray-3)}
+.dc-dir{font-size:.6rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gray-5);padding:0 6px}
+.dc-tooth{width:38px;height:52px;border:2px solid var(--gray-3);background:#fff;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:var(--navy);cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;transition:background .12s,border-color .12s,color .12s;font-family:inherit;line-height:1;position:relative}
+.dc-tooth-upper{border-radius:4px 4px 10px 10px}
+.dc-tooth-lower{border-radius:10px 10px 4px 4px}
+.dc-tooth:hover{border-color:var(--teal);background:var(--teal-l)}
+.dc-tooth.dc-sel{background:var(--teal-l);border-color:var(--teal);color:var(--teal-d)}
+.dc-tooth.dc-sel::after{content:'';position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--teal)}
+.dc-sidebar{flex:1;min-width:180px;max-width:320px}
+.dc-sel-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-5);margin-bottom:.5rem}
+.dc-chips{display:flex;flex-wrap:wrap;gap:.4rem;min-height:2rem;margin-bottom:.75rem}
+.dc-chips-empty{font-size:.82rem;color:var(--gray-5);padding:.25rem 0}
+.dc-chip{display:inline-flex;align-items:center;gap:.3rem;background:var(--teal-l);border:1px solid var(--teal);border-radius:99px;padding:.2rem .55rem .2rem .5rem;font-size:.78rem;font-weight:600}
+.dc-chip-num{font-size:.72rem;font-weight:800;color:var(--teal-d)}
+.dc-chip-name{color:var(--navy)}
+.dc-chip-x{background:none;border:none;color:var(--teal-d);cursor:pointer;font-size:.85rem;line-height:1;padding:0 0 0 .1rem;font-family:inherit;display:flex;align-items:center}
+.dc-chip-x:hover{color:var(--navy)}
+.dc-actions{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.75rem}
+.dc-qbtn{padding:.35rem .65rem;border:1.5px solid var(--gray-3);border-radius:7px;background:#fff;font-size:.75rem;font-weight:600;cursor:pointer;color:var(--gray-7);font-family:inherit;touch-action:manipulation;transition:all .12s}
+.dc-qbtn:hover{border-color:var(--teal);color:var(--teal)}
+.dc-qbtn-clear{border-color:#fca5a5;color:#dc2626}
+.dc-qbtn-clear:hover{background:#fee2e2;border-color:#dc2626}
+.dc-hint{font-size:.75rem;color:var(--gray-5);line-height:1.5}
 </style>
 </head>
 <body>
@@ -807,6 +839,7 @@ APP.items.forEach(it => {
   };
 });
 </script>
+<script src="/easydent/dental_chart.js"></script>
 <script src="/easydent/behandeling.js"></script>
 <script>
 // Boot
