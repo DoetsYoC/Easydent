@@ -222,6 +222,9 @@ return [
     'agenda_title'         => 'Meine Termine heute',
     'no_appts_today'       => 'Heute keine Termine geplant.',
     'start_treatment'      => 'Behandlung starten',
+    'continue_treatment'   => 'Behandlung fortsetzen',
+    'view_treatment'       => 'Behandlung ansehen',
+    'billing_back_note'    => 'Sie können noch zurückgehen und Anpassungen vornehmen, bevor Sie die Behandlung endgültig abschließen.',
     'duration_min_label'   => 'Min.',
 
     // Behandeling
@@ -261,4 +264,90 @@ return [
     'factor'               => 'Faktor',
     'proposed'             => 'Vorgeschlagen',
     'mandatory'            => 'Pflicht',
+
+    // Behandlungsablauf-Schritte
+    'step_intake'          => 'Anamnese',
+    'step_treatment'       => 'Behandlung',
+    'step_summary'         => 'Zusammenfassung',
+    'step_consent'         => 'Einwilligung',
+    'step_billing'         => 'Abrechnung',
+
+    // Anamnese
+    'intake_options'       => 'Patientenmerkmale',
+    'first_visit'          => 'Erstbesuch',
+    'sensitive_patient'    => 'Angstpatient',
+    'paro_patient'         => 'Paro-Patient',
+    'intake_notes_label'   => 'Anmerkungen',
+    'start_treatment_btn'  => 'Behandlung starten',
+
+    // Signalbewertung
+    'signal_title'         => 'Signalbewertung',
+    'signal_q1'            => 'Schwieriger Fall (Angst, Anatomie)?',
+    'signal_q2'            => 'Besondere Umstände vorhanden?',
+    'signal_q3'            => 'Behandlung länger als erwartet?',
+
+    // Item-Aktionen
+    'skip_btn'             => 'Überspringen',
+    'undo_btn'             => 'Rückgängig',
+    'mot_hint'             => 'Faktor erhöht',
+
+    // Zusammenfassung
+    'summary_confirmed'    => 'Bestätigte Leistungen',
+    'summary_skipped'      => 'Nicht durchgeführte Leistungen',
+    'summary_none'         => 'Keine Leistungen ausgewählt.',
+    'next_consent_btn'     => 'Zur Einwilligung',
+
+    // Einwilligung
+    'consent_intro'        => 'Der Patient wird über die geplante Behandlung informiert und erklärt sein Einverständnis.',
+    'consent_declaration'  => "Ich erkläre, dass ich durch den Behandler über Art, Zweck und mögliche Risiken der geplanten Behandlung sowie über die zu erwartenden Kosten gemäß GOZ-Tarifen informiert wurde. Ich stimme der Durchführung der oben erfassten Leistungen zu und erkläre mich mit der Vergütung der Behandlungskosten einverstanden.",
+    'signature_label'      => 'Unterschrift des Patienten',
+    'clear_sig_btn'        => 'Löschen',
+    'sign_hint'            => 'Hier unterschreiben',
+    'next_billing_btn'     => 'Zur Abrechnung',
+
+    // Abrechnung
+    'billing_title'        => 'Abrechnungsübersicht',
+    'billing_code'         => 'Code',
+    'billing_desc'         => 'Beschreibung',
+    'billing_qty'          => 'Anzahl',
+    'billing_factor'       => 'Faktor',
+    'copy_billing_btn'     => 'Abrechnungsdaten kopieren',
+    'copied_msg'           => 'Kopiert!',
+    'complete_btn'         => 'Behandlung abschließen',
+
+    // Allgemein neu
+    'next_step'            => 'Weiter',
+    'saving'               => 'Speichern...',
+    'save_error'           => 'Speichern fehlgeschlagen. Bitte Verbindung prüfen.',
+
+    // Zusammenfassung — Beträge
+    'summary_total'        => 'Indikativer Gesamtbetrag',
+    'summary_total_hint'   => '(auf Basis der GOZ-Einfachsätze, zzgl. MwSt.)',
+    'summary_blocked'      => 'Gesperrte Leistungen',
+    'summary_motivation'   => 'Begründung',
+
+    // Behandlungsübersicht (Admin)
+    'nav_behandelingen'    => 'Behandlungen',
+    'behandelingen_title'  => 'Behandlungen',
+    'session_date'         => 'Datum',
+    'session_patient'      => 'Patient',
+    'session_practitioner' => 'Behandler',
+    'session_type'         => 'Typ',
+    'session_status'       => 'Status',
+    'session_total'        => 'Gesamt',
+    'status_draft'         => 'Entwurf',
+    'status_completed'     => 'Abgeschlossen',
+    'status_exported'      => 'Exportiert',
+    'reopen_session'       => 'Wieder öffnen',
+    'reopen_confirm'       => 'Diese Behandlung wieder öffnen? Der Behandler kann danach erneut Änderungen vornehmen.',
+    'session_reopened'     => 'Behandlung wieder geöffnet.',
+    'no_sessions'          => 'Keine Behandlungen gefunden.',
+
+    // Behandlungsposition — Grundbetrag
+    'ti_fee_base'          => 'Grundbetrag (1-fach, €)',
+    'ti_fee_base_hint'     => 'GOZ-Einfachsatz in Euro',
+
+    // Abrechnung erweitert
+    'billing_fee_base'     => 'Grundbetrag',
+    'billing_fee_total'    => 'Gesamt',
 ];

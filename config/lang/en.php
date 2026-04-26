@@ -221,6 +221,9 @@ return [
     'agenda_title'         => 'My appointments today',
     'no_appts_today'       => 'No appointments planned for today.',
     'start_treatment'      => 'Start treatment',
+    'continue_treatment'   => 'Continue treatment',
+    'view_treatment'       => 'View treatment',
+    'billing_back_note'    => 'You can still go back and make changes before completing the treatment.',
     'duration_min_label'   => 'min.',
 
     // Treatment registration
@@ -260,4 +263,90 @@ return [
     'factor'               => 'Factor',
     'proposed'             => 'Proposed',
     'mandatory'            => 'Mandatory',
+
+    // Treatment flow steps
+    'step_intake'          => 'Intake',
+    'step_treatment'       => 'Treatment',
+    'step_summary'         => 'Summary',
+    'step_consent'         => 'Consent',
+    'step_billing'         => 'Billing',
+
+    // Intake
+    'intake_options'       => 'Patient characteristics',
+    'first_visit'          => 'First visit',
+    'sensitive_patient'    => 'Sensitive patient',
+    'paro_patient'         => 'Paro patient',
+    'intake_notes_label'   => 'Notes',
+    'start_treatment_btn'  => 'Start treatment',
+
+    // Signal assessment
+    'signal_title'         => 'Signal assessment',
+    'signal_q1'            => 'Difficult case (anxiety, anatomy)?',
+    'signal_q2'            => 'Special circumstances present?',
+    'signal_q3'            => 'Treatment took longer than expected?',
+
+    // Item actions
+    'skip_btn'             => 'Skip',
+    'undo_btn'             => 'Undo',
+    'mot_hint'             => 'Factor elevated',
+
+    // Summary
+    'summary_confirmed'    => 'Confirmed items',
+    'summary_skipped'      => 'Skipped items',
+    'summary_none'         => 'No items selected.',
+    'next_consent_btn'     => 'To consent',
+
+    // Consent
+    'consent_intro'        => 'The patient is informed about the planned treatment and declares their consent.',
+    'consent_declaration'  => "I declare that I have been informed by the practitioner about the nature, purpose and possible risks of the planned treatment, as well as the expected costs in accordance with GOZ rates. I consent to the performance of the items recorded above and agree to the payment of treatment costs.",
+    'signature_label'      => 'Patient signature',
+    'clear_sig_btn'        => 'Clear',
+    'sign_hint'            => 'Sign below',
+    'next_billing_btn'     => 'To billing',
+
+    // Billing
+    'billing_title'        => 'Billing overview',
+    'billing_code'         => 'Code',
+    'billing_desc'         => 'Description',
+    'billing_qty'          => 'Qty',
+    'billing_factor'       => 'Factor',
+    'copy_billing_btn'     => 'Copy billing data',
+    'copied_msg'           => 'Copied!',
+    'complete_btn'         => 'Complete treatment',
+
+    // General new
+    'next_step'            => 'Next',
+    'saving'               => 'Saving...',
+    'save_error'           => 'Save failed. Please check your connection.',
+
+    // Summary — amounts
+    'summary_total'        => 'Indicative total',
+    'summary_total_hint'   => '(based on standard GOZ rates, excl. VAT)',
+    'summary_blocked'      => 'Blocked items',
+    'summary_motivation'   => 'Justification',
+
+    // Sessions overview (admin)
+    'nav_behandelingen'    => 'Treatments',
+    'behandelingen_title'  => 'Treatments',
+    'session_date'         => 'Date',
+    'session_patient'      => 'Patient',
+    'session_practitioner' => 'Practitioner',
+    'session_type'         => 'Type',
+    'session_status'       => 'Status',
+    'session_total'        => 'Total',
+    'status_draft'         => 'Draft',
+    'status_completed'     => 'Completed',
+    'status_exported'      => 'Exported',
+    'reopen_session'       => 'Reopen',
+    'reopen_confirm'       => 'Reopen this treatment? The practitioner will be able to make changes again.',
+    'session_reopened'     => 'Treatment reopened.',
+    'no_sessions'          => 'No treatments found.',
+
+    // Treatment item — base fee
+    'ti_fee_base'          => 'Base fee (1×, €)',
+    'ti_fee_base_hint'     => 'GOZ single rate in euros',
+
+    // Billing extended
+    'billing_fee_base'     => 'Base fee',
+    'billing_fee_total'    => 'Total',
 ];

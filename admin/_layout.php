@@ -176,6 +176,9 @@ textarea { resize: vertical; min-height: 80px; }
     <a href="/easydent/admin/appointments.php" class="nav-link <?= ($activeNav ?? '') === 'appointments' ? 'active' : '' ?>">
       <span class="nav-icon">📅</span> <?= __('nav_appointments') ?>
     </a>
+    <a href="/easydent/admin/behandelingen.php" class="nav-link <?= ($activeNav ?? '') === 'behandelingen' ? 'active' : '' ?>">
+      <span class="nav-icon">📋</span> <?= __('nav_behandelingen') ?>
+    </a>
     <?php if ($user['role'] === 'super_admin'): ?>
     <a href="/easydent/admin/treatment_types.php" class="nav-link <?= ($activeNav ?? '') === 'treatment_types' ? 'active' : '' ?>">
       <span class="nav-icon">🦷</span> <?= __('nav_treatment_types') ?>

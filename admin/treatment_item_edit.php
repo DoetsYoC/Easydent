@@ -55,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fMin    = min(5.0, max(0.5, (float) str_replace(',', '.', $_POST['factor_min']    ?? '1.00')));
     $fMax    = min(5.0, max(0.5, (float) str_replace(',', '.', $_POST['factor_max']    ?? '3.50')));
     $fDef    = min(5.0, max(0.5, (float) str_replace(',', '.', $_POST['factor_default'] ?? '2.30')));
+    $feeBase = max(0.0, (float) str_replace(',', '.', $_POST['fee_base'] ?? '0.00'));
     $proposed  = isset($_POST['is_proposed'])         ? 1 : 0;
     $mandatory = isset($_POST['is_mandatory'])         ? 1 : 0;
     $motivReq  = isset($_POST['motivation_required'])  ? 1 : 0;
@@ -78,14 +79,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db->prepare("
                 UPDATE treatment_items
                 SET name_de=?, name_nl=?, name_en=?, goz_code=?,
-                    factor_min=?, factor_max=?, factor_default=?,
+                    factor_min=?, factor_max=?, factor_default=?, fee_base=?,
                     is_proposed=?, is_mandatory=?, motivation_required=?,
                     suggestion_de=?, suggestion_nl=?, suggestion_en=?,
                     sort_order=?, active=?
                 WHERE id=?
             ")->execute([
                 $nameDe, $nameNl, $nameEn, $gozCode,
-                $fMin, $fMax, $fDef,
+                $fMin, $fMax, $fDef, $feeBase,
                 $proposed, $mandatory, $motivReq,
                 $sugDe ?: null, $sugNl ?: null, $sugEn ?: null,
                 $sort, $active, $itemId,
@@ -95,13 +96,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db->prepare("
                 INSERT INTO treatment_items
                     (group_id, name_de, name_nl, name_en, goz_code,
-                     factor_min, factor_max, factor_default,
+                     factor_min, factor_max, factor_default, fee_base,
                      is_proposed, is_mandatory, motivation_required,
                      suggestion_de, suggestion_nl, suggestion_en, sort_order)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ")->execute([
                 $groupId, $nameDe, $nameNl, $nameEn, $gozCode,
-                $fMin, $fMax, $fDef,
+                $fMin, $fMax, $fDef, $feeBase,
                 $proposed, $mandatory, $motivReq,
                 $sugDe ?: null, $sugNl ?: null, $sugEn ?: null, $sort,
             ]);
@@ -239,6 +240,12 @@ include __DIR__ . '/_layout.php';
               <input type="number" name="factor_default" value="<?= $item['factor_default'] ?? '2.30' ?>"
                      min="0.5" max="5.0" step="0.01">
             </div>
+          </div>
+          <div class="form-group" style="max-width:200px">
+            <label><?= __('ti_fee_base') ?></label>
+            <input type="number" name="fee_base" value="<?= number_format((float)($item['fee_base'] ?? 0), 2, '.', '') ?>"
+                   min="0" step="0.01" placeholder="0.00">
+            <div class="form-hint"><?= __('ti_fee_base_hint') ?></div>
           </div>
         </div>
       </div>

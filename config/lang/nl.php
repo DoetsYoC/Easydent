@@ -221,6 +221,9 @@ return [
     'agenda_title'         => 'Mijn afspraken vandaag',
     'no_appts_today'       => 'Geen afspraken vandaag gepland.',
     'start_treatment'      => 'Behandeling starten',
+    'continue_treatment'   => 'Behandeling vervolgen',
+    'view_treatment'       => 'Behandeling bekijken',
+    'billing_back_note'    => 'Je kunt nog teruggaan en aanpassingen maken voordat je de behandeling definitief afrondt.',
     'duration_min_label'   => 'min.',
 
     // Behandeling
@@ -260,4 +263,90 @@ return [
     'factor'               => 'Factor',
     'proposed'             => 'Voorgesteld',
     'mandatory'            => 'Verplicht',
+
+    // Behandelflow stappen
+    'step_intake'          => 'Intake',
+    'step_treatment'       => 'Behandeling',
+    'step_summary'         => 'Samenvatting',
+    'step_consent'         => 'Toestemming',
+    'step_billing'         => 'Declaratie',
+
+    // Intake
+    'intake_options'       => 'Patiëntkenmerken',
+    'first_visit'          => 'Eerste bezoek',
+    'sensitive_patient'    => 'Gevoelige patiënt',
+    'paro_patient'         => 'Paro-patiënt',
+    'intake_notes_label'   => 'Notities',
+    'start_treatment_btn'  => 'Behandeling starten',
+
+    // Signaalvragen
+    'signal_title'         => 'Signaalbeoordeling',
+    'signal_q1'            => 'Moeilijk geval (angst, anatomie)?',
+    'signal_q2'            => 'Bijzondere omstandigheid aanwezig?',
+    'signal_q3'            => 'Behandeling langer dan verwacht?',
+
+    // Item acties
+    'skip_btn'             => 'Overslaan',
+    'undo_btn'             => 'Ongedaan',
+    'mot_hint'             => 'Factor verhoogd',
+
+    // Samenvatting
+    'summary_confirmed'    => 'Bevestigde prestaties',
+    'summary_skipped'      => 'Niet uitgevoerde prestaties',
+    'summary_none'         => 'Geen prestaties geselecteerd.',
+    'next_consent_btn'     => 'Naar toestemming',
+
+    // Toestemming
+    'consent_intro'        => 'De patiënt wordt geïnformeerd over de geplande behandeling en verklaart hiermee in te stemmen.',
+    'consent_declaration'  => "Ik verklaar dat ik door de behandelaar ben geïnformeerd over de aard, het doel en de mogelijke risico's van de geplande behandeling, alsmede over de te verwachten kosten conform de GOZ-tarieven. Ik stem in met de uitvoering van de hierboven geregistreerde verrichtingen en ga akkoord met de vergoeding van de behandelkosten.",
+    'signature_label'      => 'Handtekening patiënt',
+    'clear_sig_btn'        => 'Wissen',
+    'sign_hint'            => 'Teken hieronder',
+    'next_billing_btn'     => 'Naar declaratie',
+
+    // Declaratie
+    'billing_title'        => 'Declaratieoverzicht',
+    'billing_code'         => 'Code',
+    'billing_desc'         => 'Omschrijving',
+    'billing_qty'          => 'Aantal',
+    'billing_factor'       => 'Factor',
+    'copy_billing_btn'     => 'Kopieer declaratiegegevens',
+    'copied_msg'           => 'Gekopieerd!',
+    'complete_btn'         => 'Behandeling afronden',
+
+    // Overig nieuw
+    'next_step'            => 'Volgende',
+    'saving'               => 'Opslaan...',
+    'save_error'           => 'Opslaan mislukt. Controleer de verbinding.',
+
+    // Samenvatting — bedragen
+    'summary_total'        => 'Indicatief totaal',
+    'summary_total_hint'   => '(op basis van standaard GOZ-tarieven, excl. BTW)',
+    'summary_blocked'      => 'Geblokkeerde prestaties',
+    'summary_motivation'   => 'Toelichting',
+
+    // Behandelingen overzicht (admin)
+    'nav_behandelingen'    => 'Behandelingen',
+    'behandelingen_title'  => 'Behandelingen',
+    'session_date'         => 'Datum',
+    'session_patient'      => 'Patiënt',
+    'session_practitioner' => 'Behandelaar',
+    'session_type'         => 'Type',
+    'session_status'       => 'Status',
+    'session_total'        => 'Totaal',
+    'status_draft'         => 'Concept',
+    'status_completed'     => 'Afgerond',
+    'status_exported'      => 'Geëxporteerd',
+    'reopen_session'       => 'Heropenen',
+    'reopen_confirm'       => 'Deze behandeling heropenen? De behandelaar kan daarna opnieuw wijzigingen maken.',
+    'session_reopened'     => 'Behandeling heropend.',
+    'no_sessions'          => 'Geen behandelingen gevonden.',
+
+    // Treatment item — basisbedrag
+    'ti_fee_base'          => 'Basisbedrag (1-voud, €)',
+    'ti_fee_base_hint'     => 'GOZ 1-fach bedrag in euro',
+
+    // Billing uitgebreid
+    'billing_fee_base'     => 'Basisbedrag',
+    'billing_fee_total'    => 'Totaal',
 ];
