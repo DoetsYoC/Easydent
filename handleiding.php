@@ -516,7 +516,7 @@ footer {
 const T = {
   nl: {
     subtitle:          'Handleiding voor DEIN DENTAL',
-    hero_network:      'DEIN DENTAL Netwerk',
+    hero_network:      'DEIN DENTAL',
     hero_title:        'Welkom bij Celereon',
     hero_sub:          'Celereon helpt u bij het gestructureerd vastleggen van behandelingen, verzorgt automatisch de billing en legt de toestemming van de patiënt digitaal vast. Deze handleiding helpt u als medewerker of beheerder snel op weg.',
     hero_slogan:       '„Weil dein Lächeln die Welt verändert."',
@@ -596,7 +596,7 @@ const T = {
 
   en: {
     subtitle:          'Guide for DEIN DENTAL',
-    hero_network:      'DEIN DENTAL Network',
+    hero_network:      'DEIN DENTAL',
     hero_title:        'Welcome to Celereon',
     hero_sub:          'Celereon helps you record treatments in a structured way, handles billing automatically, and captures patient consent digitally. This guide helps you get started quickly as a practitioner or administrator.',
     hero_slogan:       '„Weil dein Lächeln die Welt verändert."',
@@ -676,7 +676,7 @@ const T = {
 
   de: {
     subtitle:          'Handbuch für DEIN DENTAL',
-    hero_network:      'DEIN DENTAL Netzwerk',
+    hero_network:      'DEIN DENTAL',
     hero_title:        'Willkommen bei Celereon',
     hero_sub:          'Celereon unterstützt Sie bei der strukturierten Erfassung von Behandlungen, übernimmt automatisch die Abrechnung und dokumentiert die Einwilligung des Patienten digital. Dieses Handbuch hilft Ihnen als Behandler oder Administrator schnell durchzustarten.',
     hero_slogan:       '„Weil dein Lächeln die Welt verändert."',
