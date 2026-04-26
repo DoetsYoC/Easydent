@@ -7,7 +7,6 @@ requireAuth('/easydent/auth/practitioner.php');
 
 $user = currentUser();
 
-// Agenda is alleen voor practitioners — managers en admins gaan naar de beheerpagina
 if ($user['role'] !== 'practitioner') {
     $date = $_GET['date'] ?? date('Y-m-d');
     header('Location: /easydent/admin/appointments.php?date=' . urlencode($date));
@@ -18,7 +17,7 @@ $db    = getDB();
 $lang  = currentLang();
 $today = date('Y-m-d');
 
-// Datum uit GET, valideer formaat
+// Geselecteerde dag
 $selectedDate = $_GET['date'] ?? $today;
 if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $selectedDate)) {
     $selectedDate = $today;
@@ -28,6 +27,7 @@ $prevDate = date('Y-m-d', strtotime($selectedDate . ' -1 day'));
 $nextDate = date('Y-m-d', strtotime($selectedDate . ' +1 day'));
 $isToday  = $selectedDate === $today;
 
+// Afspraken voor geselecteerde dag
 $stmt = $db->prepare("
     SELECT a.*,
            CONCAT(p.first_name, ' ', p.last_name) AS patient_name,
@@ -44,10 +44,45 @@ $stmt = $db->prepare("
 $stmt->execute([$user['id'], $selectedDate]);
 $appointments = $stmt->fetchAll();
 
-// Praktijknaam ophalen voor logo
+// Praktijknaam voor logo
 $practiceStmt = $db->prepare("SELECT name FROM practices WHERE id = ? LIMIT 1");
 $practiceStmt->execute([$user['practice_id']]);
 $practiceName = $practiceStmt->fetchColumn() ?: __('app_name');
+
+// ── Kalendermaand ────────────────────────────────────────────────────────
+$calMonth = $_GET['month'] ?? substr($selectedDate, 0, 7);
+if (!preg_match('/^\d{4}-\d{2}$/', $calMonth)) {
+    $calMonth = substr($selectedDate, 0, 7);
+}
+[$calYear, $calMonthN] = array_map('intval', explode('-', $calMonth));
+$calFirst    = $calMonth . '-01';
+$calDays     = (int)date('t', strtotime($calFirst));
+$calStartDow = (int)date('N', strtotime($calFirst)); // 1=Ma … 7=Zo
+$prevCal     = date('Y-m', strtotime($calFirst . ' -1 month'));
+$nextCal     = date('Y-m', strtotime($calFirst . ' +1 month'));
+
+// Dagen met afspraken ophalen voor de weergegeven maand
+$calStmt = $db->prepare("
+    SELECT DISTINCT DATE(scheduled_at) AS d
+    FROM appointments
+    WHERE practitioner_id = ? AND YEAR(scheduled_at) = ? AND MONTH(scheduled_at) = ?
+      AND status != 'cancelled'
+");
+$calStmt->execute([$user['id'], $calYear, $calMonthN]);
+$apptDays = array_flip(array_column($calStmt->fetchAll(), 'd'));
+
+$monthNames = [
+    'de' => ['','Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'],
+    'nl' => ['','januari','februari','maart','april','mei','juni','juli','augustus','september','oktober','november','december'],
+    'en' => ['','January','February','March','April','May','June','July','August','September','October','November','December'],
+];
+$dayHeaders = [
+    'de' => ['Mo','Di','Mi','Do','Fr','Sa','So'],
+    'nl' => ['Ma','Di','Wo','Do','Vr','Za','Zo'],
+    'en' => ['Mo','Tu','We','Th','Fr','Sa','Su'],
+];
+$calMonthName  = $monthNames[$lang][$calMonthN]   ?? $monthNames['de'][$calMonthN];
+$calDayHeaders = $dayHeaders[$lang]                ?? $dayHeaders['de'];
 ?><!DOCTYPE html>
 <html lang="<?= $lang ?>">
 <head>
@@ -75,30 +110,37 @@ header { background: var(--navy); padding: .9rem 1.5rem; display: flex; align-it
 .lang-btn { padding: .25rem .5rem; border-radius: 5px; font-size: .78rem; font-weight: 600; text-decoration: none; color: rgba(255,255,255,.6); border: 1.5px solid transparent; transition: all .15s; }
 .lang-btn:hover, .lang-btn.lang-active { border-color: var(--teal); color: var(--teal); background: rgba(0,180,160,.15); }
 main { max-width: 760px; margin: 2rem auto; padding: 0 1.5rem; }
-.page-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 1.5rem; }
+.page-title { font-size: 1.6rem; font-weight: 700; margin-bottom: 1.25rem; }
 
-/* Datumnavigatie */
-.date-nav { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.75rem; }
-.date-nav a, .date-nav button {
-  display: inline-flex; align-items: center; justify-content: center;
-  padding: .45rem .9rem; border-radius: 7px; font-size: .9rem; font-weight: 600;
-  text-decoration: none; border: 1.5px solid var(--gray-3); background: #fff;
-  color: var(--navy); cursor: pointer; transition: border-color .15s, color .15s;
-}
+/* ── Mini kalender ─────────────────────────────────────────────── */
+.cal-widget { background: #fff; border: 1px solid var(--gray-3); border-radius: 12px; padding: 1rem 1.1rem; margin-bottom: 1.5rem; box-shadow: var(--shadow); }
+.cal-nav-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: .7rem; }
+.cal-month-label { font-size: .95rem; font-weight: 700; color: var(--navy); text-transform: capitalize; }
+.cal-nav-btn { color: var(--gray-5); text-decoration: none; font-size: 1.2rem; line-height: 1; padding: .2rem .55rem; border-radius: 6px; transition: color .15s, background .15s; }
+.cal-nav-btn:hover { color: var(--teal); background: var(--teal-l); }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: .2rem; }
+.cal-dh { text-align: center; font-size: .65rem; font-weight: 700; color: var(--gray-5); padding: .25rem 0 .4rem; letter-spacing: .04em; text-transform: uppercase; }
+.cal-day { display: flex; flex-direction: column; align-items: center; gap: .18rem; padding: .4rem .1rem .35rem; border-radius: 7px; font-size: .83rem; font-weight: 500; color: var(--navy); text-decoration: none; transition: background .12s, color .12s; cursor: pointer; }
+.cal-day:hover { background: var(--teal-l); color: var(--teal); }
+.cal-day.is-today { color: var(--teal); font-weight: 700; }
+.cal-day.is-selected { background: var(--navy); color: #fff !important; font-weight: 700; border-radius: 7px; }
+.cal-day.is-selected:hover { background: var(--navy); opacity: .9; }
+.cal-day.is-weekend { color: var(--gray-5); }
+.cal-day.is-selected.is-weekend { color: #fff !important; }
+.cal-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); }
+.cal-day.is-selected .cal-dot { background: rgba(255,255,255,.65); }
+.cal-day.is-today.is-selected .cal-dot { background: rgba(255,255,255,.65); }
+
+/* ── Dagnavigatie ──────────────────────────────────────────────── */
+.date-nav { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.5rem; }
+.date-nav a { display: inline-flex; align-items: center; justify-content: center; padding: .45rem .9rem; border-radius: 7px; font-size: .9rem; font-weight: 600; text-decoration: none; border: 1.5px solid var(--gray-3); background: #fff; color: var(--navy); transition: border-color .15s, color .15s; }
 .date-nav a:hover { border-color: var(--teal); color: var(--teal); }
-.date-label {
-  flex: 1; text-align: center; font-size: 1rem; font-weight: 700;
-  color: var(--navy); text-transform: capitalize;
-}
+.date-label { flex: 1; text-align: center; font-size: 1rem; font-weight: 700; color: var(--navy); text-transform: capitalize; }
 .date-label span { display: block; font-size: .8rem; font-weight: 400; color: var(--gray-5); margin-top: .1rem; }
 .btn-today { background: var(--teal) !important; color: #fff !important; border-color: var(--teal) !important; }
 .btn-today.btn-hidden { visibility: hidden; pointer-events: none; }
-input[type=date].date-pick {
-  padding: .4rem .7rem; border: 1.5px solid var(--gray-3); border-radius: 7px;
-  font-size: .85rem; color: var(--navy); background: #fff; cursor: pointer;
-}
-input[type=date].date-pick:focus { outline: none; border-color: var(--teal); }
 
+/* ── Afspraakkaarten ───────────────────────────────────────────── */
 .appt-card { background: #fff; border: 1px solid var(--gray-3); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem; box-shadow: var(--shadow); display: flex; align-items: center; gap: 1.5rem; }
 .appt-card.st-completed { background: #f8fafc; border-color: #d1fae5; opacity: .85; }
 .appt-card.st-in-progress { border-color: var(--teal); border-width: 2px; }
@@ -109,18 +151,15 @@ input[type=date].date-pick:focus { outline: none; border-color: var(--teal); }
 .appt-meta { font-size: .85rem; color: var(--gray-5); }
 .appt-type { display: inline-block; background: var(--teal-l); color: var(--teal); font-size: .78rem; font-weight: 700; padding: .2rem .55rem; border-radius: 99px; margin-top: .35rem; }
 .appt-status { display: inline-flex; align-items: center; gap: .3rem; font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 99px; margin-left: .5rem; }
-.appt-status.s-planned    { background: #eff6ff; color: #1d4ed8; }
-.appt-status.s-in-progress{ background: #d1fae5; color: #065f46; }
-.appt-status.s-completed  { background: #e0f2fe; color: #0369a1; }
-.btn-start { background: var(--teal); color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-size: .875rem; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; transition: opacity .15s; }
-.btn-start:hover { opacity: .85; }
-.btn-continue { background: #059669; color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-size: .875rem; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; transition: opacity .15s; }
-.btn-continue:hover { opacity: .85; }
-.btn-view { background: var(--gray-5); color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-size: .875rem; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; transition: opacity .15s; }
-.btn-view:hover { opacity: .85; }
+.appt-status.s-planned     { background: #eff6ff; color: #1d4ed8; }
+.appt-status.s-in-progress { background: #d1fae5; color: #065f46; }
+.appt-status.s-completed   { background: #e0f2fe; color: #0369a1; }
+.btn-start    { background: var(--teal);   color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-size: .875rem; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; transition: opacity .15s; }
+.btn-continue { background: #059669;       color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-size: .875rem; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; transition: opacity .15s; }
+.btn-view     { background: var(--gray-5); color: #fff; border: none; border-radius: 8px; padding: .6rem 1.2rem; font-size: .875rem; font-weight: 700; cursor: pointer; text-decoration: none; white-space: nowrap; transition: opacity .15s; }
+.btn-start:hover, .btn-continue:hover, .btn-view:hover { opacity: .85; }
 .empty-state { text-align: center; padding: 4rem 2rem; background: #fff; border-radius: 12px; border: 1px solid var(--gray-3); }
 .empty-state p { color: var(--gray-5); font-size: 1rem; }
-.badge-in-progress { background: #d1fae5; color: #065f46; font-size: .72rem; font-weight: 700; padding: .2rem .55rem; border-radius: 99px; margin-left: .5rem; }
 </style>
 </head>
 <body>
@@ -148,23 +187,50 @@ input[type=date].date-pick:focus { outline: none; border-color: var(--teal); }
 <main>
   <h1 class="page-title"><?= __('agenda_title') ?></h1>
 
-  <!-- Datumnavigatie -->
-  <div class="date-nav">
-    <a href="?date=<?= $prevDate ?>" title="<?= __('prev_day') ?>">&#8592;</a>
-    <div class="date-label">
-      <?= strftime('%A %e %B %Y', strtotime($selectedDate)) !== false
-          ? date('l d F Y', strtotime($selectedDate))
-          : $selectedDate ?>
-      <?php if ($isToday): ?>
-        <span><?= __('today_btn') ?></span>
-      <?php endif ?>
+  <!-- Maandkalender -->
+  <div class="cal-widget">
+    <div class="cal-nav-row">
+      <a href="?date=<?= $selectedDate ?>&month=<?= $prevCal ?>" class="cal-nav-btn">&#8249;</a>
+      <span class="cal-month-label"><?= htmlspecialchars($calMonthName) ?> <?= $calYear ?></span>
+      <a href="?date=<?= $selectedDate ?>&month=<?= $nextCal ?>" class="cal-nav-btn">&#8250;</a>
     </div>
-    <a href="?date=<?= $nextDate ?>" title="<?= __('next_day') ?>">&#8594;</a>
-    <a href="?date=<?= $today ?>" class="btn-today<?= $isToday ? ' btn-hidden' : '' ?>"><?= __('today_btn') ?></a>
-    <input type="date" class="date-pick" value="<?= $selectedDate ?>"
-           onchange="location.href='?date='+this.value">
+    <div class="cal-grid">
+      <?php foreach ($calDayHeaders as $dh): ?>
+        <div class="cal-dh"><?= $dh ?></div>
+      <?php endforeach ?>
+      <?php
+        for ($i = 1; $i < $calStartDow; $i++) echo '<div></div>';
+        for ($d = 1; $d <= $calDays; $d++):
+            $dateStr  = sprintf('%s-%02d', $calMonth, $d);
+            $hasAppt  = isset($apptDays[$dateStr]);
+            $isSel    = ($dateStr === $selectedDate);
+            $isTod    = ($dateStr === $today);
+            $dow      = (int)date('N', strtotime($dateStr)); // 6=Za, 7=Zo
+            $classes  = 'cal-day';
+            if ($isSel)          $classes .= ' is-selected';
+            if ($isTod)          $classes .= ' is-today';
+            if ($dow >= 6)       $classes .= ' is-weekend';
+      ?>
+        <a href="?date=<?= $dateStr ?>" class="<?= $classes ?>">
+          <?= $d ?>
+          <?php if ($hasAppt): ?><span class="cal-dot"></span><?php endif ?>
+        </a>
+      <?php endfor ?>
+    </div>
   </div>
 
+  <!-- Dagnavigatie -->
+  <div class="date-nav">
+    <a href="?date=<?= $prevDate ?>&month=<?= substr($prevDate, 0, 7) ?>" title="<?= __('prev_day') ?>">&#8592;</a>
+    <div class="date-label">
+      <?= date('l d F Y', strtotime($selectedDate)) ?>
+      <?php if ($isToday): ?><span><?= __('today_btn') ?></span><?php endif ?>
+    </div>
+    <a href="?date=<?= $nextDate ?>&month=<?= substr($nextDate, 0, 7) ?>" title="<?= __('next_day') ?>">&#8594;</a>
+    <a href="?date=<?= $today ?>" class="btn-today<?= $isToday ? ' btn-hidden' : '' ?>"><?= __('today_btn') ?></a>
+  </div>
+
+  <!-- Afspraken -->
   <?php if (empty($appointments)): ?>
     <div class="empty-state">
       <p style="font-size:2.5rem;margin-bottom:1rem">📅</p>
@@ -182,9 +248,7 @@ input[type=date].date-pick:focus { outline: none; border-color: var(--teal); }
         $btnClass    = match($status) { 'in_progress' => 'btn-continue', 'completed' => 'btn-view', default => 'btn-start' };
       ?>
       <div class="appt-card <?= $cardClass ?>">
-        <div class="appt-time">
-          <?= date('H:i', strtotime($a['scheduled_at'])) ?>
-        </div>
+        <div class="appt-time"><?= date('H:i', strtotime($a['scheduled_at'])) ?></div>
         <div class="appt-info">
           <div class="appt-patient">
             <?= htmlspecialchars($a['patient_name']) ?>
