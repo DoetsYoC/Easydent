@@ -17,7 +17,7 @@ $lang = currentLang();
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Easydent — <?= __('app_subtitle') ?></title>
+<title>Celereon — <?= __('app_subtitle') ?></title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root { --navy: #1a2e4a; --teal: #3aafa9; --teal-l: #e8f5f4; --gray-2: #f1f5f9; --gray-3: #e2e8f0; --gray-5: #64748b; }
@@ -54,7 +54,7 @@ footer a { color: var(--gray-5); }
 
 <header>
   <a href="/easydent/index.php" class="header-logo">
-    <div class="logo-mark">ED</div>
+    <div class="logo-mark">CE</div>
     <span><?= __('app_name') ?></span>
   </a>
   <div class="header-right">
@@ -99,7 +99,7 @@ footer a { color: var(--gray-5); }
     </div>
   </div>
   <footer>
-    Easydent — <?= __('app_subtitle') ?> &amp; GOZ
+    Celereon — <?= __('app_subtitle') ?> &amp; GOZ
     &nbsp;|&nbsp;
     <a href="/easydent/auth/logout.php"><?= __('logout') ?></a>
   </footer>

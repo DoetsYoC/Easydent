@@ -55,7 +55,7 @@ $existingCount = (int)$db->query("SELECT COUNT(*) FROM users WHERE role='practit
 <html lang="nl">
 <head>
 <meta charset="utf-8">
-<title>Behandelaars aanmaken — Easydent Setup</title>
+<title>Behandelaars aanmaken — Celereon Setup</title>
 <style>
 body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f1f5f9; color: #1a2e4a; max-width: 700px; margin: 3rem auto; padding: 1.5rem; }
 h1 { font-size: 1.4rem; margin-bottom: .5rem; }

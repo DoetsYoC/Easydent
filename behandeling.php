@@ -47,7 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['_ajax'])) {
            ->execute([$sid, $pid, $c['goz_code'] ?? '', $c['name'] ?? '', $fac, $feeBase, $feeTotal, $ord++]);
     }
 
-    $notes = json_encode(['intake' => $intake, 'signal' => $signal]);
+    $mandatorySkipped = json_decode($_POST['mandatory_skipped'] ?? '[]', true) ?: [];
+    $notes = json_encode(['intake' => $intake, 'signal' => $signal, 'mandatory_skipped' => $mandatorySkipped]);
     $db->prepare("UPDATE treatment_sessions SET notes=?,consent_signed=?,consent_at=?,consent_signature=? WHERE id=?")
        ->execute([$notes, $consentSigned, $consentSigned ? date('Y-m-d H:i:s') : null, $signatureData ?: null, $sid]);
 
@@ -79,10 +80,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['_ajax'])) {
 }
 
 // ── Data laden ──────────────────────────────────────────────────────────────
-$st = $db->prepare("SELECT a.*, CONCAT(p.first_name,' ',p.last_name) AS patient_name, p.birth_date, tt.name_{$lang} AS type_name FROM appointments a JOIN patients p ON p.id=a.patient_id LEFT JOIN treatment_types tt ON tt.id=a.treatment_type_id WHERE a.id=?");
+$st = $db->prepare("SELECT a.*, CONCAT(p.first_name,' ',p.last_name) AS patient_name, p.birth_date, tt.name_{$lang} AS type_name, tt.tooth_selection_mode FROM appointments a JOIN patients p ON p.id=a.patient_id LEFT JOIN treatment_types tt ON tt.id=a.treatment_type_id WHERE a.id=?");
 $st->execute([$appointmentId]);
 $appt = $st->fetch();
 if (!$appt) { header('Location: /easydent/agenda.php'); exit; }
+
+$practiceRow = $db->prepare("SELECT name FROM practices WHERE id=?");
+$practiceRow->execute([$appt['practice_id']]);
+$practiceName = $practiceRow->fetchColumn() ?: '';
 
 $backUrl = '/easydent/agenda.php?date=' . date('Y-m-d', strtotime($appt['scheduled_at']));
 if ($appt['status'] === 'planned') {
@@ -128,10 +133,14 @@ if (!empty($appt['treatment_type_id'])) {
 
 $savedIntake = [];
 $savedSignal = [];
+$savedMandSkipped = [];
 if (!empty($sess['notes'])) {
     $nd = json_decode($sess['notes'], true) ?: [];
     $savedIntake = $nd['intake'] ?? [];
     $savedSignal = $nd['signal'] ?? [];
+    foreach ($nd['mandatory_skipped'] ?? [] as $m) {
+        $savedMandSkipped[(int)$m['id']] = $m['reason'] ?? '';
+    }
 }
 
 $nc  = 'name_'       . $lang;
@@ -168,7 +177,7 @@ foreach ($groups as $g) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title><?= __('treatment_title') ?> — Easydent</title>
+<title><?= __('treatment_title') ?> — Celereon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -195,11 +204,13 @@ body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:var(--gray-2
 
 /* ── Step bar ── */
 .step-bar{background:#fff;border-bottom:1px solid var(--gray-3);padding:.85rem 1rem;display:flex;align-items:flex-start;justify-content:center;flex-shrink:0}
-.step-item{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;max-width:120px}
+.step-item{flex:1;display:flex;flex-direction:column;align-items:center;position:relative;max-width:120px;cursor:pointer}
 .step-item::before{content:'';position:absolute;top:13px;left:calc(-50% + 14px);right:calc(50% + 14px);height:2px;background:var(--gray-3);transition:background .3s}
 .step-item:first-child::before{display:none}
 .step-num{width:26px;height:26px;border-radius:50%;border:2px solid var(--gray-3);background:#fff;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--gray-5);position:relative;z-index:1;transition:all .2s;flex-shrink:0}
 .step-label{font-size:.62rem;font-weight:600;color:var(--gray-5);margin-top:.3rem;text-align:center;line-height:1.3}
+.step-item:not(.s-active):not(.s-done):hover .step-num{border-color:var(--teal);color:var(--teal);background:var(--teal-l)}
+.step-item.s-active{cursor:default}
 .step-item.s-active .step-num{background:var(--teal);border-color:var(--teal);color:#fff}
 .step-item.s-active .step-label{color:var(--teal)}
 .step-item.s-done .step-num{background:var(--green);border-color:var(--green);color:#fff}
@@ -344,6 +355,7 @@ textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(5
 canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
 .sig-actions{display:flex;gap:.5rem;align-items:center}
 .sig-hint{font-size:.75rem;color:var(--gray-5)}
+.sig-wrap.has-sig+.sig-actions .sig-hint{display:none}
 
 /* ── Billing (step 5) ── */
 .billing-table{width:100%;border-collapse:collapse;font-size:.875rem;margin-bottom:1.25rem}
@@ -355,6 +367,10 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
 .billing-factor{font-weight:700;color:var(--teal)}
 .copy-wrap{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
 .copy-confirm{font-size:.78rem;font-weight:600;color:var(--green);display:none;align-items:center;gap:.3rem}
+
+/* ── Mandatory skip motivation ── */
+.mand-mot-block{padding:.65rem 1.25rem .85rem;background:#fffbeb;border-top:1px solid #fde68a}
+.mand-mot-block label{display:block;font-size:.78rem;font-weight:600;color:var(--amber);margin-bottom:.3rem}
 
 /* ── Alerts ── */
 .alert{padding:.75rem 1rem;border-radius:8px;font-size:.875rem;margin-bottom:1rem}
@@ -398,7 +414,7 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
   $steps = [__('step_intake'), __('step_treatment'), __('step_summary'), __('step_consent'), __('step_billing')];
   foreach ($steps as $i => $label):
   ?>
-  <div class="step-item" id="stepBarItem<?= $i+1 ?>">
+  <div class="step-item" id="stepBarItem<?= $i+1 ?>" onclick="stepBarClick(<?= $i+1 ?>)">
     <div class="step-num"><?= $i+1 ?></div>
     <div class="step-label"><?= htmlspecialchars($label) ?></div>
   </div>
@@ -462,6 +478,12 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
 <!-- ── Stap 2: Behandeling ── -->
 <div class="step-panel" data-step="2" id="panel2">
   <h2 class="page-title"><?= __('step_treatment') ?></h2>
+
+  <!-- Mandatory alert -->
+  <div id="mandatoryAlert" class="alert alert-warning" style="display:none">
+    ⚠ <strong><?= __('mandatory_alert_title') ?></strong>
+    <div id="mandatoryAlertItems" style="margin-top:.4rem;font-size:.82rem;line-height:1.8"></div>
+  </div>
 
   <!-- Signal banner -->
   <div class="signal-banner" id="signalBanner">
@@ -531,6 +553,12 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
             <!-- rendered by JS -->
           </div>
         </div>
+        <?php if ($it['is_mandatory']): ?>
+        <div class="mand-mot-block" id="imandmot_<?= $iid ?>" style="<?= !empty($savedMandSkipped[$iid]) ? '' : 'display:none' ?>">
+          <label>⚠ <?= __('mandatory_skip_reason') ?></label>
+          <textarea id="imandmottext_<?= $iid ?>" oninput="onMandMotInput()" placeholder="<?= htmlspecialchars(__('mandatory_skip_placeholder')) ?>"><?= htmlspecialchars($savedMandSkipped[$iid] ?? '') ?></textarea>
+        </div>
+        <?php endif ?>
         <div class="factor-panel" id="ifactor_<?= $iid ?>" style="display:none">
           <div class="factor-row">
             <span class="factor-label"><?= __('factor_label') ?>:</span>
@@ -568,17 +596,36 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
 <div class="step-panel" data-step="4" id="panel4">
   <h2 class="page-title"><?= __('step_consent') ?></h2>
 
+  <!-- Behandeloverzicht voor de patiënt (JS-rendered) -->
+  <div class="card" style="padding:1.25rem;margin-bottom:1rem" id="consentSummaryCard">
+    <div style="font-size:.78rem;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem"><?= __('consent_summary_title') ?></div>
+    <div id="consentSummary"><!-- rendered by JS --></div>
+  </div>
+
   <div class="card" style="padding:1.25rem">
     <p style="font-size:.88rem;color:var(--gray-7);margin-bottom:.85rem"><?= __('consent_intro') ?></p>
     <div class="consent-text"><?= nl2br(__('consent_declaration')) ?></div>
+
     <div class="sig-label"><?= __('signature_label') ?></div>
-    <div class="sig-wrap" id="sigWrap">
-      <canvas id="sigCanvas"></canvas>
-    </div>
-    <div class="sig-actions">
-      <button class="btn btn-outline btn-sm" onclick="clearSignature()">↺ <?= __('clear_sig_btn') ?></button>
-      <span class="sig-hint"><?= __('sign_hint') ?></span>
-    </div>
+    <?php if ($isCompleted && !empty($sess['consent_signed']) && !empty($sess['consent_signature'])): ?>
+      <div class="sig-wrap has-sig" style="pointer-events:none">
+        <img src="<?= htmlspecialchars($sess['consent_signature']) ?>"
+             style="width:100%;height:160px;object-fit:contain;display:block">
+      </div>
+      <p style="font-size:.8rem;color:var(--teal-d);margin-top:.5rem">
+        ✓ <?= __('consent_signed_on', ['date' => date('d-m-Y H:i', strtotime($sess['consent_at']))]) ?>
+      </p>
+    <?php elseif ($isCompleted): ?>
+      <p style="font-size:.85rem;color:var(--gray-5);margin-top:.5rem"><?= __('no_signature') ?></p>
+    <?php else: ?>
+      <div class="sig-wrap" id="sigWrap">
+        <canvas id="sigCanvas"></canvas>
+      </div>
+      <div class="sig-actions">
+        <button class="btn btn-outline btn-sm" onclick="clearSignature()">↺ <?= __('clear_sig_btn') ?></button>
+        <span class="sig-hint" id="sigHint"><?= __('sign_hint') ?></span>
+      </div>
+    <?php endif ?>
   </div>
 </div>
 
@@ -632,7 +679,7 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
 </div>
 
 <script>
-// ── PHP data → JS ──────────────────────────────────────────────────────────
+// PHP data → JS
 const APP = {
   sid:         <?= $sid ?>,
   apptId:      <?= $appointmentId ?>,
@@ -644,6 +691,12 @@ const APP = {
   savedIntake: <?= json_encode($savedIntake, JSON_UNESCAPED_UNICODE) ?>,
   savedSignal: <?= json_encode($savedSignal, JSON_UNESCAPED_UNICODE) ?>,
   hasCodes:    <?= !empty($groups) ? 'true' : 'false' ?>,
+  practice:    '<?= addslashes($practiceName) ?>',
+  patient:     '<?= addslashes($appt['patient_name']) ?>',
+  birthDate:   '<?= $appt['birth_date'] ? date('d-m-Y', strtotime($appt['birth_date'])) : '' ?>',
+  treatDate:   '<?= date('d-m-Y', strtotime($appt['scheduled_at'])) ?>',
+  treatType:   '<?= addslashes($appt['type_name'] ?? '') ?>',
+  toothSelectionMode: '<?= $appt['tooth_selection_mode'] ?? 'not_applicable' ?>',
 };
 
 const T = {
@@ -680,6 +733,21 @@ const T = {
   sumTotalHint:   '<?= addslashes(__('summary_total_hint')) ?>',
   sumBlocked:     '<?= addslashes(__('summary_blocked')) ?>',
   sumMotivation:  '<?= addslashes(__('summary_motivation')) ?>',
+  billingTitle:   '<?= addslashes(__('billing_h_title')) ?>',
+  billingPractice:'<?= addslashes(__('billing_h_practice')) ?>',
+  billingPatient: '<?= addslashes(__('billing_h_patient')) ?>',
+  billingBirth:   '<?= addslashes(__('billing_h_birthdate')) ?>',
+  billingDate:    '<?= addslashes(__('billing_h_date')) ?>',
+  billingType:    '<?= addslashes(__('billing_h_type')) ?>',
+  billingGoz:     '<?= addslashes(__('billing_h_goz')) ?>',
+  billingDesc:    '<?= addslashes(__('billing_h_desc')) ?>',
+  billingQty:     '<?= addslashes(__('billing_h_qty')) ?>',
+  billingFactor:  '<?= addslashes(__('billing_h_factor')) ?>',
+  billingFeeBase: '<?= addslashes(__('billing_fee_base')) ?>',
+  billingFeeTotal:'<?= addslashes(__('billing_fee_total')) ?>',
+  billingGrand:   '<?= addslashes(__('billing_h_grand_total')) ?>',
+  mandAlertTitle: '<?= addslashes(__('mandatory_alert_title')) ?>',
+  mandNotDone:    '<?= addslashes(__('mandatory_not_done')) ?>',
 };
 
 // ── State ───────────────────────────────────────────────────────────────────
@@ -703,6 +771,7 @@ const state = {
   sigCtx: null,
   sigDrawing: false,
   sigHasData: false,
+  sigDataUrl: null,  // gecachte data URL — canvas-inhoud gaat verloren op tablets
 };
 
 // Initialize items
@@ -723,559 +792,13 @@ APP.items.forEach(it => {
     excl:       it.excl,
   };
 });
-
-// Apply initial exclusions for already-confirmed items
+</script>
+<script src="/easydent/behandeling.js"></script>
+<script>
+// Boot
 APP.items.forEach(it => {
-  if (state.items[it.id].status === 'confirmed') {
-    applyExclusions(it.id, true);
-  }
+  if (state.items[it.id].status === 'confirmed') applyExclusions(it.id, true);
 });
-
-// ── Intake toggles ──────────────────────────────────────────────────────────
-function toggleChip(key) {
-  if (APP.isCompleted) return;
-  state.intake[key] = !state.intake[key];
-  const el = document.getElementById('chip_' + key);
-  if (el) el.classList.toggle('is-on', state.intake[key]);
-}
-
-const _notesEl = document.getElementById('intakeNotes');
-if (_notesEl) {
-  _notesEl.addEventListener('input', function() { state.intake.notes = this.value; });
-}
-
-// ── Signal banner ────────────────────────────────────────────────────────────
-let signalOpen = false;
-function toggleSignal() {
-  signalOpen = !signalOpen;
-  document.getElementById('signalBody').classList.toggle('open', signalOpen);
-  document.getElementById('signalCaret').textContent = signalOpen ? '▲' : '▼';
-}
-
-function setSignal(q, val) {
-  if (APP.isCompleted) return;
-  const key = 'q' + q;
-  state.signal[key] = val;
-  document.querySelectorAll(`.signal-q:nth-child(${q}) .sq-btn`).forEach(b => b.classList.remove('active'));
-  const btn = document.querySelector(`.signal-q:nth-child(${q}) .sq-btn.sq-${val ? 'yes' : 'no'}`);
-  if (btn) btn.classList.add('active');
-  updateSignalSummary();
-}
-
-function updateSignalSummary() {
-  const answered = [state.signal.q1, state.signal.q2, state.signal.q3].filter(v => v !== null).length;
-  const flagged  = [state.signal.q1, state.signal.q2, state.signal.q3].filter(v => v === true).length;
-  const lbl = document.getElementById('signalToggleLabel');
-  if (lbl) {
-    lbl.textContent = answered < 3
-      ? T.signal_title + ` (${answered}/3)`
-      : T.signal_title + (flagged > 0 ? ` — ⚡ ${flagged}` : ' — ✓');
-  }
-}
-updateSignalSummary();
-
-// ── Item rendering ──────────────────────────────────────────────────────────
-function renderItem(id) {
-  const it     = state.items[id];
-  const card   = document.getElementById('icard_' + id);
-  const badge  = document.getElementById('ibadge_' + id);
-  const actions= document.getElementById('iactions_' + id);
-  const factor = document.getElementById('ifactor_' + id);
-  const blocked= document.getElementById('iblocked_' + id);
-  if (!card) return;
-
-  card.className = 'item-card';
-  badge.className = 'item-badge';
-
-  if (APP.isCompleted) {
-    if (it.status === 'confirmed') {
-      card.classList.add('st-confirmed');
-      badge.classList.add('b-confirmed');
-      actions.innerHTML = `<span style="font-size:.8rem;font-weight:700;color:var(--green)">✓ ${T.confirmed}</span>`;
-      showFactor(id, true);
-    } else {
-      actions.innerHTML = `<span style="font-size:.8rem;color:var(--gray-5)">${it.status === 'skipped' ? T.skipped : T.blocked}</span>`;
-      showFactor(id, false);
-    }
-    return;
-  }
-
-  switch (it.status) {
-    case 'confirmed':
-      card.classList.add('st-confirmed');
-      badge.classList.add('b-confirmed');
-      if (blocked) { blocked.style.display = 'none'; }
-      actions.innerHTML = `<button class="btn-undo" onclick="itemUndo(${id})">✕ ${T.undo}</button>`;
-      showFactor(id, true);
-      break;
-
-    case 'skipped':
-      card.classList.add('st-skipped');
-      if (blocked) { blocked.style.display = 'none'; }
-      actions.innerHTML = `<button class="btn-confirm" onclick="itemConfirm(${id})">${T.confirm}</button>`;
-      showFactor(id, false);
-      break;
-
-    case 'blocked':
-      card.classList.add('st-blocked');
-      badge.classList.add('b-blocked');
-      const blockerNames = [...(state.blockedBy[id] || [])].map(bid => {
-        const bl = state.items[bid];
-        return bl ? bl.name : bid;
-      });
-      if (blocked) {
-        blocked.textContent = T.blockedBy + ': ' + blockerNames.join(', ');
-        blocked.style.display = 'block';
-      }
-      actions.innerHTML = '';
-      showFactor(id, false);
-      break;
-
-    default: // proposed / available
-      if (blocked) { blocked.style.display = 'none'; }
-      actions.innerHTML = `
-        <button class="btn-confirm" onclick="itemConfirm(${id})">${T.confirm}</button>
-        ${it.mandatory ? '' : `<button class="btn-skip" onclick="itemSkip(${id})">${T.skip}</button>`}`;
-      showFactor(id, false);
-  }
-}
-
-function showFactor(id, show) {
-  const panel = document.getElementById('ifactor_' + id);
-  if (!panel) return;
-  panel.style.display = show ? 'block' : 'none';
-  if (show) checkFactorMotivation(id);
-}
-
-function renderAllItems() {
-  Object.keys(state.items).forEach(id => renderItem(parseInt(id)));
-}
-
-// ── Item actions ─────────────────────────────────────────────────────────────
-function itemConfirm(id) {
-  state.items[id].status = 'confirmed';
-  applyExclusions(id, true);
-  renderItem(id);
-  updateProgress();
-}
-
-function itemSkip(id) {
-  state.items[id].status = 'skipped';
-  applyExclusions(id, false);
-  renderItem(id);
-  updateProgress();
-}
-
-function itemUndo(id) {
-  const it = state.items[id];
-  if (it.mandatory) return;
-  const prevStatus = it.status;
-  it.status = it.proposed ? 'proposed' : 'available';
-  applyExclusions(id, false);
-  renderItem(id);
-  updateProgress();
-}
-
-// ── Exclusions ───────────────────────────────────────────────────────────────
-function applyExclusions(sourceId, isConfirming) {
-  const excl = state.items[sourceId]?.excl || [];
-  excl.forEach(targetId => {
-    if (!state.blockedBy[targetId]) state.blockedBy[targetId] = new Set();
-    if (isConfirming) {
-      state.blockedBy[targetId].add(sourceId);
-    } else {
-      state.blockedBy[targetId].delete(sourceId);
-    }
-    const stillBlocked = state.blockedBy[targetId].size > 0;
-    if (stillBlocked) {
-      state.items[targetId].status = 'blocked';
-    } else {
-      if (state.items[targetId]?.status === 'blocked') {
-        const it = state.items[targetId];
-        state.items[targetId].status = (it.mandatory || it.proposed) ? 'proposed' : 'available';
-      }
-    }
-    renderItem(targetId);
-  });
-}
-
-// ── Factor ───────────────────────────────────────────────────────────────────
-function adjFactor(id, delta) {
-  const it  = state.items[id];
-  const inp = document.getElementById('ifval_' + id);
-  if (!inp) return;
-  const newVal = Math.round((parseFloat(inp.value) + delta) * 10) / 10;
-  const clamped = Math.max(it.fmin, Math.min(it.fmax, newVal));
-  inp.value = clamped.toFixed(2);
-  it.factor = clamped;
-  checkFactorMotivation(id);
-}
-
-function onFactorInput(id) {
-  const it  = state.items[id];
-  const inp = document.getElementById('ifval_' + id);
-  if (!inp) return;
-  const val = parseFloat(inp.value);
-  if (!isNaN(val)) {
-    it.factor = Math.max(it.fmin, Math.min(it.fmax, val));
-  }
-  checkFactorMotivation(id);
-}
-
-function checkFactorMotivation(id) {
-  const it   = state.items[id];
-  const inp  = document.getElementById('ifval_' + id);
-  const mot  = document.getElementById('imot_' + id);
-  const high = document.getElementById('ifhigh_' + id);
-  if (!inp || !mot) return;
-  const val  = parseFloat(inp.value);
-  const show = it.mot_req || val > it.fdef;
-  mot.style.display  = show ? 'block' : 'none';
-  if (high) high.style.display = (val > it.fdef) ? 'inline' : 'none';
-}
-
-// ── Progress ─────────────────────────────────────────────────────────────────
-function updateProgress() {
-  const total     = Object.keys(state.items).length;
-  const confirmed = Object.values(state.items).filter(it => it.status === 'confirmed').length;
-  const pct       = total > 0 ? (confirmed / total) * 100 : 0;
-  const lbl       = document.getElementById('progressLabel');
-  const fill      = document.getElementById('progressFill');
-  if (lbl)  lbl.textContent = `${confirmed} / ${total}`;
-  if (fill) fill.style.width = pct + '%';
-}
-
-// ── Summary builder ───────────────────────────────────────────────────────────
-function buildSummary() {
-  const el = document.getElementById('summaryContent');
-  if (!el) return;
-
-  const confirmed = Object.values(state.items).filter(it => it.status === 'confirmed');
-  const skipped   = Object.values(state.items).filter(it => it.status === 'skipped');
-  const blocked   = Object.values(state.items).filter(it => it.status === 'blocked');
-
-  // Signal summary
-  const sigFlags = [state.signal.q1, state.signal.q2, state.signal.q3];
-  const sigFlagged = sigFlags.filter(v => v === true).length;
-  let sigHtml = '';
-  if (sigFlagged > 0) {
-    sigHtml = `<div class="signal-summary-box">⚡ `;
-    const flaggedQs = T.signal_qs.filter((_, i) => sigFlags[i] === true);
-    sigHtml += flaggedQs.join(' &nbsp;|&nbsp; ') + '</div>';
-  }
-
-  // Bevestigd
-  let totalFee = 0;
-  let confirmedHtml = '';
-  if (confirmed.length === 0) {
-    confirmedHtml = `<p class="empty-note">${T.summary_none}</p>`;
-  } else {
-    confirmedHtml = confirmed.map(it => {
-      const id   = findItemId(it.goz_code);
-      const fval = parseFloat(document.getElementById('ifval_' + id)?.value || it.factor);
-      const feeTotal = it.fee_base > 0 ? it.fee_base * fval : 0;
-      totalFee += feeTotal;
-
-      const motEl  = document.getElementById('imottext_' + id);
-      const motTxt = motEl ? motEl.value.trim() : '';
-      const motHtml = motTxt
-        ? `<div class="si-mot"><span class="si-mot-label">${T.sumMotivation}:</span> ${escHtml(motTxt)}</div>`
-        : '';
-
-      const feeHtml = feeTotal > 0
-        ? `<span class="si-fee">€ ${feeTotal.toFixed(2).replace('.', ',')}</span>`
-        : '';
-
-      return `<div class="summary-item">
-        <span class="si-code">GOZ ${it.goz_code}</span>
-        <span class="si-name">${escHtml(it.name)}</span>
-        <span class="si-factor">× ${fval.toFixed(2)}</span>
-        ${feeHtml}
-        ${motHtml}
-      </div>`;
-    }).join('');
-  }
-
-  // Totaalbedrag
-  let totalHtml = '';
-  if (totalFee > 0) {
-    totalHtml = `<div class="summary-total-row">
-      <span class="st-label">${T.sumTotal}</span>
-      <span class="st-amount">€ ${totalFee.toFixed(2).replace('.', ',')}</span>
-    </div>
-    <div class="summary-total-hint">${T.sumTotalHint}</div>`;
-  }
-
-  // Overgeslagen
-  let skippedHtml = '';
-  if (skipped.length > 0) {
-    skippedHtml = `<div class="summary-section"><div class="summary-title">${T.summary_skipped}</div>` +
-      skipped.map(it => `<div class="summary-item si-skipped"><span class="si-code">GOZ ${it.goz_code}</span><span class="si-name">${escHtml(it.name)}</span><span class="si-factor">—</span></div>`).join('') +
-      '</div>';
-  }
-
-  // Geblokkeerd
-  let blockedHtml = '';
-  if (blocked.length > 0) {
-    blockedHtml = `<div class="summary-section"><div class="summary-title">${T.sumBlocked}</div>` +
-      blocked.map(it => {
-        const blockerNames = [...(state.blockedBy[findItemId(it.goz_code)] || [])].map(bid => {
-          const bl = state.items[bid];
-          return bl ? 'GOZ ' + bl.goz_code : '';
-        }).filter(Boolean).join(', ');
-        return `<div class="summary-item si-skipped"><span class="si-code">GOZ ${it.goz_code}</span><span class="si-name">${escHtml(it.name)}</span><span class="si-factor" style="font-size:.75rem;color:var(--red)">${T.blockedBy}: ${blockerNames}</span></div>`;
-      }).join('') +
-      '</div>';
-  }
-
-  el.innerHTML = sigHtml +
-    `<div class="summary-section"><div class="summary-title">${T.summary_confirmed}</div>${confirmedHtml}</div>` +
-    totalHtml +
-    skippedHtml +
-    blockedHtml;
-}
-
-function findItemId(goz_code) {
-  const it = APP.items.find(i => i.goz_code === goz_code);
-  return it ? it.id : null;
-}
-
-// ── Billing builder ───────────────────────────────────────────────────────────
-function buildBilling() {
-  const tbody = document.getElementById('billingBody');
-  if (!tbody) return;
-  const confirmed = Object.values(state.items).filter(it => it.status === 'confirmed');
-  if (confirmed.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--gray-5);padding:1.5rem">${T.summary_none}</td></tr>`;
-    return;
-  }
-  let grandTotal = 0;
-  const rows = confirmed.map(it => {
-    const id       = findItemId(it.goz_code);
-    const fval     = parseFloat(document.getElementById('ifval_' + id)?.value || it.factor);
-    const feeBase  = it.fee_base || 0;
-    const feeTotal = feeBase > 0 ? feeBase * fval : 0;
-    grandTotal    += feeTotal;
-    const fmtBase  = feeBase  > 0 ? '€ ' + feeBase.toFixed(2).replace('.', ',')  : '—';
-    const fmtTotal = feeTotal > 0 ? '€ ' + feeTotal.toFixed(2).replace('.', ',') : '—';
-    return `<tr>
-      <td><span class="billing-code">GOZ ${escHtml(it.goz_code)}</span></td>
-      <td>${escHtml(it.name)}</td>
-      <td style="text-align:center">1</td>
-      <td style="text-align:center"><span class="billing-factor">${fval.toFixed(2)}</span></td>
-      <td style="text-align:right;font-variant-numeric:tabular-nums">${fmtBase}</td>
-      <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:600">${fmtTotal}</td>
-    </tr>`;
-  }).join('');
-  const totalRow = grandTotal > 0
-    ? `<tr style="border-top:2px solid var(--gray-3);font-weight:700">
-        <td colspan="5" style="text-align:right;padding-top:.75rem">${T.sumTotal}</td>
-        <td style="text-align:right;padding-top:.75rem;color:var(--teal-d)">€ ${grandTotal.toFixed(2).replace('.', ',')}</td>
-       </tr>`
-    : '';
-  tbody.innerHTML = rows + totalRow;
-}
-
-function copyBilling() {
-  const confirmed = Object.values(state.items).filter(it => it.status === 'confirmed');
-  if (confirmed.length === 0) return;
-  const rows = confirmed.map(it => {
-    const id       = findItemId(it.goz_code);
-    const fval     = parseFloat(document.getElementById('ifval_' + id)?.value || it.factor).toFixed(2);
-    const feeBase  = it.fee_base > 0 ? it.fee_base.toFixed(2) : '0.00';
-    const feeTotal = it.fee_base > 0 ? (it.fee_base * parseFloat(fval)).toFixed(2) : '0.00';
-    return `GOZ ${it.goz_code}\t${it.name}\t1\t${fval}\t${feeBase}\t${feeTotal}`;
-  });
-  navigator.clipboard.writeText(rows.join('\n')).then(() => {
-    const conf = document.getElementById('copyConfirm');
-    if (conf) { conf.style.display = 'flex'; setTimeout(() => conf.style.display = 'none', 2500); }
-  });
-}
-
-// ── Signature canvas ──────────────────────────────────────────────────────────
-function initCanvas() {
-  const canvas = document.getElementById('sigCanvas');
-  if (!canvas) return;
-  const wrap = canvas.parentElement;
-  canvas.width  = wrap.clientWidth || 600;
-  canvas.height = 160;
-  const ctx = canvas.getContext('2d');
-  ctx.strokeStyle = '#1a2e4a';
-  ctx.lineWidth   = 2;
-  ctx.lineCap     = 'round';
-  ctx.lineJoin    = 'round';
-  state.sigCanvas  = canvas;
-  state.sigCtx     = ctx;
-
-  function getPos(e) {
-    const rect = canvas.getBoundingClientRect();
-    const src  = e.touches ? e.touches[0] : e;
-    return { x: (src.clientX - rect.left) * (canvas.width / rect.width),
-             y: (src.clientY - rect.top)  * (canvas.height / rect.height) };
-  }
-  function start(e) {
-    e.preventDefault();
-    state.sigDrawing = true;
-    const p = getPos(e);
-    ctx.beginPath(); ctx.moveTo(p.x, p.y);
-  }
-  function move(e) {
-    e.preventDefault();
-    if (!state.sigDrawing) return;
-    const p = getPos(e);
-    ctx.lineTo(p.x, p.y); ctx.stroke();
-    state.sigHasData = true;
-    wrap.classList.add('has-sig');
-  }
-  function end(e) { state.sigDrawing = false; }
-
-  canvas.addEventListener('mousedown', start);
-  canvas.addEventListener('mousemove', move);
-  canvas.addEventListener('mouseup',   end);
-  canvas.addEventListener('mouseleave',end);
-  canvas.addEventListener('touchstart',start, { passive: false });
-  canvas.addEventListener('touchmove', move,  { passive: false });
-  canvas.addEventListener('touchend',  end);
-}
-
-function clearSignature() {
-  if (!state.sigCtx) return;
-  state.sigCtx.clearRect(0, 0, state.sigCanvas.width, state.sigCanvas.height);
-  state.sigHasData = false;
-  const wrap = document.getElementById('sigWrap');
-  if (wrap) wrap.classList.remove('has-sig');
-}
-
-// ── Step navigation ───────────────────────────────────────────────────────────
-const TOTAL_STEPS = 5;
-
-async function stepNav(dir) {
-  if (state.saving) return;
-  const newStep = state.step + dir;
-  if (newStep < 1) { window.location.href = APP.backUrl; return; }
-  if (newStep > TOTAL_STEPS) return;
-
-  if (dir > 0) {
-    // Save before advancing
-    const ok = await ajaxSave('save');
-    if (!ok) return;
-  }
-
-  goToStep(newStep);
-}
-
-function goToStep(n) {
-  state.step = n;
-  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('s-visible'));
-  const panel = document.getElementById('panel' + n);
-  if (panel) panel.classList.add('s-visible');
-
-  // Step bar
-  for (let i = 1; i <= TOTAL_STEPS; i++) {
-    const el = document.getElementById('stepBarItem' + i);
-    if (!el) continue;
-    el.className = 'step-item';
-    if (i < n) el.classList.add('s-done');
-    else if (i === n) el.classList.add('s-active');
-  }
-
-  // Nav buttons
-  const btnBack = document.getElementById('btnBack');
-  const btnNext = document.getElementById('btnNext');
-
-  if (btnBack) {
-    btnBack.textContent = n === 1 ? ('← ' + T.backAgenda) : ('← ' + T.back);
-  }
-
-  if (btnNext) {
-    if (n === TOTAL_STEPS) {
-      if (APP.isCompleted) {
-        btnNext.style.display = 'none';
-      } else {
-        btnNext.textContent  = '✓ ' + T.complete;
-        btnNext.className    = 'btn btn-green';
-        btnNext.onclick      = completeSession;
-      }
-    } else {
-      btnNext.style.display = '';
-      btnNext.textContent   = T.next + ' →';
-      btnNext.className     = 'btn btn-primary';
-      btnNext.onclick       = () => stepNav(1);
-    }
-  }
-
-  // Step-specific init
-  if (n === 2) { renderAllItems(); updateProgress(); }
-  if (n === 3) buildSummary();
-  if (n === 4) { setTimeout(initCanvas, 50); }
-  if (n === 5) buildBilling();
-
-  window.scrollTo(0, 0);
-}
-
-// ── AJAX save ─────────────────────────────────────────────────────────────────
-function collectItemPayload() {
-  return Object.entries(state.items).map(([id, it]) => {
-    const inp = document.getElementById('ifval_' + id);
-    const mot = document.getElementById('imottext_' + id);
-    return {
-      id:       parseInt(id),
-      goz_code: it.goz_code,
-      name:     it.name,
-      status:   it.status,
-      factor:   inp ? parseFloat(inp.value) : it.factor,
-      fmin:     it.fmin,
-      fmax:     it.fmax,
-      fee_base: it.fee_base,
-      motivation: mot ? mot.value : '',
-    };
-  });
-}
-
-async function ajaxSave(action = 'save') {
-  state.saving = true;
-  const ind = document.getElementById('savingIndicator');
-  if (ind) ind.style.display = 'flex';
-
-  const body = new FormData();
-  body.append('_ajax', '1');
-  body.append('csrf_token', APP.csrf);
-  body.append('action', action);
-  body.append('codes', JSON.stringify(collectItemPayload()));
-  body.append('intake', JSON.stringify(state.intake));
-  body.append('signal', JSON.stringify(state.signal));
-
-  const hasSig = state.sigHasData && state.sigCanvas;
-  body.append('consent_signed', hasSig ? '1' : '0');
-  if (hasSig) body.append('signature', state.sigCanvas.toDataURL('image/png'));
-
-  try {
-    const res = await fetch(window.location.href, { method: 'POST', body });
-    const data = await res.json();
-    if (!data.ok) throw new Error('Server error');
-    if (data.completed) { window.location.href = APP.backUrl; return true; }
-    return true;
-  } catch (e) {
-    const err = document.getElementById('ajaxError');
-    if (err) { err.textContent = T.errorMsg; err.style.display = 'block'; }
-    return false;
-  } finally {
-    state.saving = false;
-    if (ind) ind.style.display = 'none';
-  }
-}
-
-async function completeSession() {
-  if (!confirm(T.confirmMsg)) return;
-  await ajaxSave('complete');
-}
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── Boot ─────────────────────────────────────────────────────────────────────
 goToStep(APP.isCompleted ? 5 : 1);
 if (APP.isCompleted) buildBilling();
 </script>

@@ -58,13 +58,13 @@ $csrf = csrfToken();
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title><?= __('login_title') ?> — Easydent</title>
+<title><?= __('login_title') ?> — Celereon</title>
 <style><?php include __DIR__ . '/_auth.css.php'; ?></style>
 </head>
 <body>
 <div class="auth-card">
   <div class="auth-logo">
-    <div class="logo-mark">ED</div>
+    <div class="logo-mark">CE</div>
     <div>
       <h1><?= __('app_name') ?></h1>
       <p><?= __('login_subtitle') ?></p>

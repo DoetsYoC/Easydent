@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push *)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" api graphql -F projectId=\"PVT_kwHOEKRRGs4BVpnU\" -F itemId=\"PVTI_lAHOEKRRGs4BVpnUzgq9sr4\" -F fieldId=\"PVTSSF_lAHOEKRRGs4BVpnUzhREAyU\" -f optionId=\"269d4330\" -f query='mutation\\($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!\\) { updateProjectV2ItemFieldValue\\(input: { projectId: $projectId itemId: $itemId fieldId: $fieldId value: { singleSelectOptionId: $optionId } }\\) { projectV2Item { id } } }')",
+      "PowerShell(php -r \"echo password_hash\\('1234', PASSWORD_BCRYPT\\);\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git commit *)",
+      "Bash(gh issue create --title 'ISSUE-13: Behandelflow redesign naar oorspronkelijk ontwerp' --body ' *)",
+      "PowerShell(Get-Command gh -ErrorAction SilentlyContinue)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" issue view 14)",
+      "WebFetch(domain:dein-dental.de)",
+      "Bash(gh issue *)",
+      "PowerShell(gh issue list)",
+      "PowerShell(Get-ChildItem \"C:\\\\Program Files\\\\GitHub CLI\" -ErrorAction SilentlyContinue; Get-ChildItem \"$env:LOCALAPPDATA\\\\Programs\\\\GitHub CLI\" -ErrorAction SilentlyContinue; Get-ChildItem \"C:\\\\Users\\\\SabineDoets\\\\AppData\\\\Local\\\\Programs\\\\GitHub CLI\" -ErrorAction SilentlyContinue)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" issue list)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" issue view 10)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" issue view 11)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" issue view 16)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" issue view 17)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" label list --repo DoetsYoC/Easydent)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" label create \"feedback\" --description \"Ingediend via de applicatie\" --color \"0052cc\" --repo DoetsYoC/Easydent)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" issue close 17 --comment \"Opgelost: floating feedback-knop op alle pagina's. Modal verstuurt issue naar GitHub via API met label 'feedback'. PAT configureren in config/config.php.\")",
+      "Bash(php -l feedback_submit.php)",
+      "Bash(php -l config/feedback_widget.php)",
+      "Bash(php -l admin/_layout_end.php)",
+      "Bash(php -l agenda.php)",
+      "Bash(php -l behandeling.php)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" project list --owner DoetsYoC)",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" api graphql --field query='{ user\\(login: \"DoetsYoC\"\\) { projectV2\\(number: 1\\) { id fields\\(first: 20\\) { nodes { ... on ProjectV2SingleSelectField { id name options { id name } } } } } } }')",
+      "PowerShell(& \"C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe\" api graphql -F login=\"DoetsYoC\" -f query='query\\($login: String!\\) { user\\(login: $login\\) { projectV2\\(number: 1\\) { id fields\\(first: 20\\) { nodes { ... on ProjectV2SingleSelectField { id name options { id name } } } } } } }')"
+    ]
+  }
+}

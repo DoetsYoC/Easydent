@@ -82,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
 
 // Blokkeer herinstallatie als lock file bestaat
 if (file_exists($lockFile) && $step !== 'done') {
-    die('<h2 style="color:red;font-family:sans-serif;">Easydent is al geïnstalleerd. Verwijder setup/install.php van de server.</h2>');
+    die('<h2 style="color:red;font-family:sans-serif;">Celereon is al geïnstalleerd. Verwijder setup/install.php van de server.</h2>');
 }
 
 ?><!DOCTYPE html>
@@ -90,7 +90,7 @@ if (file_exists($lockFile) && $step !== 'done') {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Easydent — Installatie</title>
+<title>Celereon — Installatie</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -170,9 +170,9 @@ if (file_exists($lockFile) && $step !== 'done') {
 <body>
 <div class="card">
   <div class="logo">
-    <div class="logo-mark">ED</div>
+    <div class="logo-mark">CE</div>
     <div>
-      <h1>Easydent</h1>
+      <h1>Celereon</h1>
       <p>Installatie wizard</p>
     </div>
   </div>

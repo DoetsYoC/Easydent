@@ -63,6 +63,22 @@ include __DIR__ . '/_layout.php';
   </div>
 </div>
 
+<?php if ($isSuperAdmin): ?>
+<div class="card" style="border-left:4px solid #f59e0b">
+  <div class="card-header">
+    <h3 style="color:#92400e">🛠 Beheertools</h3>
+  </div>
+  <div style="display:flex;gap:.75rem;flex-wrap:wrap;padding:.5rem 0">
+    <a href="/easydent/admin/seed_fulldata.php" style="display:inline-block;background:#f59e0b;color:#fff;border-radius:7px;padding:.5rem 1rem;font-size:.85rem;font-weight:700;text-decoration:none">
+      Testdata vullen (alle praktijken)
+    </a>
+    <a href="/easydent/admin/github_sync.php" style="display:inline-block;background:#374151;color:#fff;border-radius:7px;padding:.5rem 1rem;font-size:.85rem;font-weight:700;text-decoration:none">
+      GitHub sync
+    </a>
+  </div>
+</div>
+<?php endif ?>
+
 <div class="card">
   <div class="card-header">
     <h3><?= __('recent_activity') ?></h3>

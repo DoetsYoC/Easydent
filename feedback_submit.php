@@ -61,7 +61,7 @@ function translateToNl(string $text, string $fromLang): string
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_TIMEOUT        => 8,
         CURLOPT_SSL_VERIFYPEER => true,
-        CURLOPT_USERAGENT      => 'Easydent-App',
+        CURLOPT_USERAGENT      => 'Celereon-App',
     ]);
     $result = curl_exec($ch);
     curl_close($ch);
@@ -118,7 +118,7 @@ curl_setopt_array($ch, [
         'Content-Type: application/json',
         'Authorization: Bearer ' . GITHUB_TOKEN,
         'Accept: application/vnd.github+json',
-        'User-Agent: Easydent-App',
+        'User-Agent: Celereon-App',
         'X-GitHub-Api-Version: 2022-11-28',
     ],
     CURLOPT_TIMEOUT        => 10,
@@ -160,7 +160,7 @@ if ($nodeId && defined('GITHUB_PROJECT_ID') && GITHUB_PROJECT_ID !== '') {
         CURLOPT_HTTPHEADER     => [
             'Content-Type: application/json',
             'Authorization: Bearer ' . GITHUB_TOKEN,
-            'User-Agent: Easydent-App',
+            'User-Agent: Celereon-App',
         ],
         CURLOPT_TIMEOUT        => 10,
         CURLOPT_SSL_VERIFYPEER => true,
@@ -192,7 +192,7 @@ if ($nodeId && defined('GITHUB_PROJECT_ID') && GITHUB_PROJECT_ID !== '') {
             CURLOPT_HTTPHEADER     => [
                 'Content-Type: application/json',
                 'Authorization: Bearer ' . GITHUB_TOKEN,
-                'User-Agent: Easydent-App',
+                'User-Agent: Celereon-App',
             ],
             CURLOPT_TIMEOUT        => 10,
             CURLOPT_SSL_VERIFYPEER => true,

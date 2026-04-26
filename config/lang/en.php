@@ -1,7 +1,7 @@
 <?php
 return [
     // General
-    'app_name'            => 'Easydent',
+    'app_name'            => 'Celereon',
     'app_subtitle'        => 'Treatment Registration',
     'logout'              => 'Log out',
     'save'                => 'Save',
@@ -45,7 +45,7 @@ return [
     'login_as_manager'    => '← Log in as manager',
 
     // PIN
-    'pin_title'           => 'PIN — Easydent',
+    'pin_title'           => 'PIN — Celereon',
     'pin_subtitle'        => 'Enter PIN',
     'welcome'             => 'Welcome,',
     'pin_error'           => 'Incorrect PIN.',
@@ -134,6 +134,11 @@ return [
     'tt_name_nl'           => 'Name (Dutch)',
     'tt_name_en'           => 'Name (English)',
     'tt_sort_order'        => 'Sort order',
+    'tt_tooth_selection_mode'      => 'Tooth selection',
+    'tooth_mode_not_applicable'    => 'Not applicable',
+    'tooth_mode_optional'          => 'Optional',
+    'tooth_mode_required_single'   => 'Required — one tooth',
+    'tooth_mode_required_multiple' => 'Required — one or more teeth',
     'tt_none'              => 'No treatment types yet.',
     'tt_created'           => "Treatment type ':name' created.",
     'tt_updated'           => 'Treatment type updated.',
@@ -244,6 +249,10 @@ return [
     'complete_treatment'      => 'Complete treatment',
     'session_saved'           => 'Treatment saved.',
     'confirm_complete_msg'    => 'Really complete this treatment? No further changes will be possible.',
+    'mandatory_alert_title'   => 'Some mandatory items still need your attention.',
+    'mandatory_skip_reason'   => 'Why was this not performed?',
+    'mandatory_skip_placeholder' => 'E.g. patient declined, medical reason, planned for next session...',
+    'mandatory_not_done'      => 'Not performed',
 
     'edit_practice'        => 'Edit practice',
     'practice_updated'     => "Practice ':name' updated.",
@@ -297,11 +306,14 @@ return [
     'next_consent_btn'     => 'To consent',
 
     // Consent
-    'consent_intro'        => 'The patient is informed about the planned treatment and declares their consent.',
-    'consent_declaration'  => "I declare that I have been informed by the practitioner about the nature, purpose and possible risks of the planned treatment, as well as the expected costs in accordance with GOZ rates. I consent to the performance of the items recorded above and agree to the payment of treatment costs.",
+    'consent_summary_title' => 'Overview of performed treatment',
+    'consent_intro'        => 'The patient is informed about the performed treatment and declares their consent.',
+    'consent_declaration'  => "I declare that I have been informed by the practitioner about the nature, purpose and possible risks of the treatment listed above, as well as the expected costs in accordance with GOZ rates. I consent to the performance of the recorded items and agree to the payment of treatment costs.",
     'signature_label'      => 'Patient signature',
     'clear_sig_btn'        => 'Clear',
     'sign_hint'            => 'Sign below',
+    'consent_signed_on'    => 'Signed on :date',
+    'no_signature'         => 'No signature recorded.',
     'next_billing_btn'     => 'To billing',
 
     // Billing
@@ -364,4 +376,17 @@ return [
     // Billing extended
     'billing_fee_base'     => 'Base fee',
     'billing_fee_total'    => 'Total',
+
+    // Billing copy — structure
+    'billing_h_title'      => 'BILLING DATA',
+    'billing_h_practice'   => 'Practice',
+    'billing_h_patient'    => 'Patient',
+    'billing_h_birthdate'  => 'Date of birth',
+    'billing_h_date'       => 'Treatment date',
+    'billing_h_type'       => 'Treatment type',
+    'billing_h_goz'        => 'GOZ code',
+    'billing_h_desc'       => 'Description',
+    'billing_h_qty'        => 'Quantity',
+    'billing_h_factor'     => 'Factor',
+    'billing_h_grand_total'=> 'Grand total',
 ];

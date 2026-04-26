@@ -20,7 +20,7 @@ function ghGraphQL(string $query, array $variables = []): array
         CURLOPT_HTTPHEADER     => [
             'Content-Type: application/json',
             'Authorization: Bearer ' . GITHUB_TOKEN,
-            'User-Agent: Easydent-App',
+            'User-Agent: Celereon-App',
         ],
         CURLOPT_TIMEOUT        => 10,
         CURLOPT_SSL_VERIFYPEER => true,
@@ -40,7 +40,7 @@ function ghRest(string $path, string $method = 'GET', array $body = []): array
             'Content-Type: application/json',
             'Authorization: Bearer ' . GITHUB_TOKEN,
             'Accept: application/vnd.github+json',
-            'User-Agent: Easydent-App',
+            'User-Agent: Celereon-App',
             'X-GitHub-Api-Version: 2022-11-28',
         ],
         CURLOPT_TIMEOUT        => 10,
@@ -132,7 +132,7 @@ $csrf = csrfToken();
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>GitHub Sync — Easydent</title>
+<title>GitHub Sync — Celereon</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',system-ui,sans-serif;background:#f1f5f9;color:#1a2e4a;padding:2rem}

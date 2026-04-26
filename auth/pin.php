@@ -70,7 +70,7 @@ $csrf = csrfToken();
 <body>
 <div class="auth-card">
   <div class="auth-logo">
-    <div class="logo-mark">ED</div>
+    <div class="logo-mark">CE</div>
     <div>
       <h1><?= __('app_name') ?></h1>
       <p><?= __('pin_subtitle') ?></p>

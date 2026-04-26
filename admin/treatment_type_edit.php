@@ -30,19 +30,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'update_type') {
-        $nameDe = sanitizeString($_POST['name_de'] ?? '', 100);
-        $nameNl = sanitizeString($_POST['name_nl'] ?? '', 100);
-        $nameEn = sanitizeString($_POST['name_en'] ?? '', 100);
-        $sort   = (int) ($_POST['sort_order'] ?? 0);
+        $nameDe    = sanitizeString($_POST['name_de'] ?? '', 100);
+        $nameNl    = sanitizeString($_POST['name_nl'] ?? '', 100);
+        $nameEn    = sanitizeString($_POST['name_en'] ?? '', 100);
+        $sort      = (int) ($_POST['sort_order'] ?? 0);
+        $validModes = ['not_applicable','optional','required_single','required_multiple'];
+        $toothMode = in_array($_POST['tooth_selection_mode'] ?? '', $validModes)
+            ? $_POST['tooth_selection_mode'] : 'not_applicable';
         if (!$nameDe) {
             $error = __('name_required');
         } else {
-            $db->prepare("UPDATE treatment_types SET name_de=?, name_nl=?, name_en=?, sort_order=? WHERE id=?")
-               ->execute([$nameDe, $nameNl ?: $nameDe, $nameEn ?: $nameDe, $sort, $typeId]);
+            $db->prepare("UPDATE treatment_types SET name_de=?, name_nl=?, name_en=?, sort_order=?, tooth_selection_mode=? WHERE id=?")
+               ->execute([$nameDe, $nameNl ?: $nameDe, $nameEn ?: $nameDe, $sort, $toothMode, $typeId]);
             logAudit(null, currentUser()['id'], 'update_treatment_type', 'treatment_type', $typeId);
             $type = array_merge($type, [
                 'name_de' => $nameDe, 'name_nl' => $nameNl ?: $nameDe,
                 'name_en' => $nameEn ?: $nameDe, 'sort_order' => $sort,
+                'tooth_selection_mode' => $toothMode,
             ]);
             $success = __('tt_updated');
         }
@@ -151,6 +155,16 @@ include __DIR__ . '/_layout.php';
           <label><?= __('tt_sort_order') ?></label>
           <input type="number" name="sort_order" value="<?= $type['sort_order'] ?>" min="0" max="999">
         </div>
+      </div>
+      <div class="form-group" style="margin-top:1rem">
+        <label><?= __('tt_tooth_selection_mode') ?></label>
+        <select name="tooth_selection_mode" style="max-width:340px">
+          <?php foreach (['not_applicable','optional','required_single','required_multiple'] as $m): ?>
+            <option value="<?= $m ?>" <?= ($type['tooth_selection_mode'] ?? 'not_applicable') === $m ? 'selected' : '' ?>>
+              <?= __('tooth_mode_' . $m) ?>
+            </option>
+          <?php endforeach ?>
+        </select>
       </div>
       <div style="margin-top:1rem">
         <button class="btn btn-primary"><?= __('save') ?></button>

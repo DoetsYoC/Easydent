@@ -1,7 +1,7 @@
 <?php
 return [
     // Algemeen
-    'app_name'            => 'Easydent',
+    'app_name'            => 'Celereon',
     'app_subtitle'        => 'Behandlungserfassung',
     'logout'              => 'Abmelden',
     'save'                => 'Speichern',
@@ -135,6 +135,11 @@ return [
     'tt_name_nl'           => 'Name (Niederländisch)',
     'tt_name_en'           => 'Name (Englisch)',
     'tt_sort_order'        => 'Reihenfolge',
+    'tt_tooth_selection_mode'      => 'Zahnauswahl',
+    'tooth_mode_not_applicable'    => 'Nicht anwendbar',
+    'tooth_mode_optional'          => 'Optional',
+    'tooth_mode_required_single'   => 'Erforderlich — ein Zahn',
+    'tooth_mode_required_multiple' => 'Erforderlich — ein oder mehrere Zähne',
     'tt_none'              => 'Noch keine Behandlungstypen.',
     'tt_created'           => "Behandlungstyp ':name' erstellt.",
     'tt_updated'           => 'Behandlungstyp aktualisiert.',
@@ -245,6 +250,10 @@ return [
     'complete_treatment'      => 'Behandlung abschließen',
     'session_saved'           => 'Behandlung gespeichert.',
     'confirm_complete_msg'    => 'Behandlung wirklich abschließen? Danach sind keine Änderungen mehr möglich.',
+    'mandatory_alert_title'   => 'Es gibt Pflichtleistungen, die noch Ihre Aufmerksamkeit erfordern.',
+    'mandatory_skip_reason'   => 'Warum wurde dies nicht durchgeführt?',
+    'mandatory_skip_placeholder' => 'Z.B. Patient abgelehnt, medizinischer Grund, für nächste Sitzung geplant...',
+    'mandatory_not_done'      => 'Nicht durchgeführt',
 
     'edit_practice'        => 'Praxis bearbeiten',
     'practice_updated'     => "Praxis ':name' aktualisiert.",
@@ -298,11 +307,14 @@ return [
     'next_consent_btn'     => 'Zur Einwilligung',
 
     // Einwilligung
-    'consent_intro'        => 'Der Patient wird über die geplante Behandlung informiert und erklärt sein Einverständnis.',
-    'consent_declaration'  => "Ich erkläre, dass ich durch den Behandler über Art, Zweck und mögliche Risiken der geplanten Behandlung sowie über die zu erwartenden Kosten gemäß GOZ-Tarifen informiert wurde. Ich stimme der Durchführung der oben erfassten Leistungen zu und erkläre mich mit der Vergütung der Behandlungskosten einverstanden.",
+    'consent_summary_title' => 'Übersicht der durchgeführten Behandlung',
+    'consent_intro'        => 'Der Patient wird über die durchgeführte Behandlung informiert und erklärt sein Einverständnis.',
+    'consent_declaration'  => "Ich erkläre, dass ich durch den Behandler über Art, Zweck und mögliche Risiken der oben aufgeführten Behandlung sowie über die zu erwartenden Kosten gemäß GOZ-Tarifen informiert wurde. Ich stimme der Durchführung der erfassten Leistungen zu und erkläre mich mit der Vergütung der Behandlungskosten einverstanden.",
     'signature_label'      => 'Unterschrift des Patienten',
     'clear_sig_btn'        => 'Löschen',
     'sign_hint'            => 'Hier unterschreiben',
+    'consent_signed_on'    => 'Unterzeichnet am :date',
+    'no_signature'         => 'Keine Unterschrift erfasst.',
     'next_billing_btn'     => 'Zur Abrechnung',
 
     // Abrechnung
@@ -365,4 +377,17 @@ return [
     // Abrechnung erweitert
     'billing_fee_base'     => 'Grundbetrag',
     'billing_fee_total'    => 'Gesamt',
+
+    // Abrechnungskopie — Struktur
+    'billing_h_title'      => 'ABRECHNUNGSDATEN',
+    'billing_h_practice'   => 'Praxis',
+    'billing_h_patient'    => 'Patient',
+    'billing_h_birthdate'  => 'Geburtsdatum',
+    'billing_h_date'       => 'Behandlungsdatum',
+    'billing_h_type'       => 'Behandlungstyp',
+    'billing_h_goz'        => 'GOZ-Code',
+    'billing_h_desc'       => 'Beschreibung',
+    'billing_h_qty'        => 'Anzahl',
+    'billing_h_factor'     => 'Faktor',
+    'billing_h_grand_total'=> 'Gesamtbetrag',
 ];

@@ -1,7 +1,7 @@
 <?php
 return [
     // Algemeen
-    'app_name'            => 'Easydent',
+    'app_name'            => 'Celereon',
     'app_subtitle'        => 'Behandelregistratie',
     'logout'              => 'Uitloggen',
     'save'                => 'Opslaan',
@@ -45,7 +45,7 @@ return [
     'login_as_manager'    => '← Inloggen als beheerder',
 
     // PIN
-    'pin_title'           => 'Pincode — Easydent',
+    'pin_title'           => 'Pincode — Celereon',
     'pin_subtitle'        => 'Pincode invoeren',
     'welcome'             => 'Welkom,',
     'pin_error'           => 'Onjuiste pincode.',
@@ -134,6 +134,11 @@ return [
     'tt_name_nl'           => 'Naam (Nederlands)',
     'tt_name_en'           => 'Naam (Engels)',
     'tt_sort_order'        => 'Volgorde',
+    'tt_tooth_selection_mode'      => 'Tandselectie',
+    'tooth_mode_not_applicable'    => 'Niet van toepassing',
+    'tooth_mode_optional'          => 'Optioneel',
+    'tooth_mode_required_single'   => 'Verplicht — één tand',
+    'tooth_mode_required_multiple' => 'Verplicht — één of meer tanden',
     'tt_none'              => 'Nog geen behandeltypes.',
     'tt_created'           => "Behandeltype ':name' aangemaakt.",
     'tt_updated'           => 'Behandeltype bijgewerkt.',
@@ -244,6 +249,10 @@ return [
     'complete_treatment'      => 'Behandeling afronden',
     'session_saved'           => 'Behandeling opgeslagen.',
     'confirm_complete_msg'    => 'Behandeling echt afronden? Daarna zijn geen wijzigingen meer mogelijk.',
+    'mandatory_alert_title'   => 'Er zijn verplichte prestaties die nog aandacht vragen.',
+    'mandatory_skip_reason'   => 'Waarom is dit niet uitgevoerd?',
+    'mandatory_skip_placeholder' => 'Bijv. patiënt geweigerd, medische reden, volgende sessie gepland...',
+    'mandatory_not_done'      => 'Niet uitgevoerd',
 
     'edit_practice'        => 'Praktijk bewerken',
     'practice_updated'     => "Praktijk ':name' bijgewerkt.",
@@ -297,11 +306,14 @@ return [
     'next_consent_btn'     => 'Naar toestemming',
 
     // Toestemming
-    'consent_intro'        => 'De patiënt wordt geïnformeerd over de geplande behandeling en verklaart hiermee in te stemmen.',
-    'consent_declaration'  => "Ik verklaar dat ik door de behandelaar ben geïnformeerd over de aard, het doel en de mogelijke risico's van de geplande behandeling, alsmede over de te verwachten kosten conform de GOZ-tarieven. Ik stem in met de uitvoering van de hierboven geregistreerde verrichtingen en ga akkoord met de vergoeding van de behandelkosten.",
+    'consent_summary_title' => 'Overzicht uitgevoerde behandeling',
+    'consent_intro'        => 'De patiënt wordt geïnformeerd over de uitgevoerde behandeling en verklaart hiermee in te stemmen.',
+    'consent_declaration'  => "Ik verklaar dat ik door de behandelaar ben geïnformeerd over de aard, het doel en de mogelijke risico's van de hierboven vermelde behandeling, alsmede over de te verwachten kosten conform de GOZ-tarieven. Ik stem in met de uitvoering van de geregistreerde verrichtingen en ga akkoord met de vergoeding van de behandelkosten.",
     'signature_label'      => 'Handtekening patiënt',
     'clear_sig_btn'        => 'Wissen',
     'sign_hint'            => 'Teken hieronder',
+    'consent_signed_on'    => 'Ondertekend op :date',
+    'no_signature'         => 'Geen handtekening vastgelegd.',
     'next_billing_btn'     => 'Naar declaratie',
 
     // Declaratie
@@ -364,4 +376,17 @@ return [
     // Billing uitgebreid
     'billing_fee_base'     => 'Basisbedrag',
     'billing_fee_total'    => 'Totaal',
+
+    // Declaratiekopieer — structuur
+    'billing_h_title'      => 'DECLARATIEGEGEVENS',
+    'billing_h_practice'   => 'Praktijk',
+    'billing_h_patient'    => 'Patiënt',
+    'billing_h_birthdate'  => 'Geboortedatum',
+    'billing_h_date'       => 'Datum behandeling',
+    'billing_h_type'       => 'Type behandeling',
+    'billing_h_goz'        => 'GOZ-code',
+    'billing_h_desc'       => 'Omschrijving',
+    'billing_h_qty'        => 'Aantal',
+    'billing_h_factor'     => 'Factor',
+    'billing_h_grand_total'=> 'Totaalbedrag',
 ];

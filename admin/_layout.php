@@ -8,7 +8,7 @@ $lang = currentLang();
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title><?= __($pageTitle ?? 'nav_dashboard') ?> — Easydent</title>
+<title><?= __($pageTitle ?? 'nav_dashboard') ?> — Celereon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -154,7 +154,7 @@ textarea { resize: vertical; min-height: 80px; }
 
 <aside class="sidebar">
   <div class="sidebar-logo">
-    <div class="logo-mark">ED</div>
+    <div class="logo-mark">CE</div>
     <span><?= __('app_name') ?></span>
   </div>
   <nav>

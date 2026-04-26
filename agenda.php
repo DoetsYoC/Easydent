@@ -88,7 +88,7 @@ $calDayHeaders = $dayHeaders[$lang]                ?? $dayHeaders['de'];
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title><?= __('agenda_title') ?> — Easydent</title>
+<title><?= __('agenda_title') ?> — Celereon</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -166,7 +166,7 @@ main { max-width: 760px; margin: 2rem auto; padding: 0 1.5rem; }
 
 <header>
   <a href="/easydent/agenda.php" class="header-logo">
-    <div class="logo-mark">ED</div>
+    <div class="logo-mark">CE</div>
     <div class="logo-text">
       <span class="logo-practice"><?= htmlspecialchars($practiceName) ?></span>
       <span class="logo-sub"><?= __('app_name') ?></span>

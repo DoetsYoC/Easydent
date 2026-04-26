@@ -1,12 +1,15 @@
 <?php
-require_once 'config/database.php';
+require_once __DIR__ . '/config/database.php';
+require_once __DIR__ . '/config/helpers.php';
 
-try {
-    $db = getDB();
-    echo "<h1 style='color:green'>✅ Database verbinding werkt!</h1>";
-    echo "<p>Verbonden met: " . DB_NAME . "</p>";
-    echo "<p>Host: " . DB_HOST . "</p>";
-} catch (Exception $e) {
-    echo "<h1 style='color:red'>❌ Verbinding mislukt</h1>";
-    echo "<p>" . $e->getMessage() . "</p>";
-}
+echo "LANG_DIR: " . LANG_DIR . "<br>";
+
+$data = @include LANG_DIR . 'de.php';
+echo "include via LANG_DIR: " . (is_array($data) ? 'OK (' . count($data) . ' sleutels)' : 'MISLUKT') . "<br>";
+
+// Simuleer sessie voor vertaling
+session_start();
+$_SESSION['lang'] = 'de';
+
+echo "login_btn: " . __('login_btn') . "<br>";
+echo "app_name: " . __('app_name') . "<br>";
