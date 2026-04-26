@@ -560,6 +560,27 @@ function onMandMotInput() {
   updateMandatoryAlert();
 }
 
+function checkToothSelection() {
+  var mode  = APP.toothSelectionMode;
+  var count = state.selectedTeeth.length;
+  var errEl = document.getElementById('dcError');
+  var ok    = true;
+  var msg   = '';
+
+  if (mode === 'required_single' && count !== 1) {
+    ok = false; msg = T.dcErrorSingle;
+  } else if (mode === 'required_multiple' && count === 0) {
+    ok = false; msg = T.dcErrorMultiple;
+  }
+
+  if (!ok && errEl) {
+    errEl.textContent  = msg;
+    errEl.style.display = 'block';
+    errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  return ok;
+}
+
 // ── Step navigation ───────────────────────────────────────────────────────────
 const TOTAL_STEPS = 5;
 
@@ -568,6 +589,7 @@ async function stepBarClick(n) {
   if (APP.isCompleted) { goToStep(n); return; }
   if (n > state.step) {
     if (state.step === 2 && !checkMandatory()) return;
+    if (state.step === 2 && !checkToothSelection()) return;
     const ok = await ajaxSave('save');
     if (!ok) return;
   }
@@ -582,6 +604,7 @@ async function stepNav(dir) {
 
   if (dir > 0 && !APP.isCompleted) {
     if (state.step === 2 && !checkMandatory()) return;
+    if (state.step === 2 && !checkToothSelection()) return;
     const ok = await ajaxSave('save');
     if (!ok) return;
   }
@@ -630,7 +653,32 @@ function goToStep(n) {
   }
 
   // Step-specific init
-  if (n === 2) { renderAllItems(); updateProgress(); updateMandatoryAlert(); }
+  if (n === 2) {
+    renderAllItems(); updateProgress(); updateMandatoryAlert();
+    if (!APP.isCompleted && document.getElementById('dcPanel')) {
+      DentalChart.init('dcPanel', {
+        mode:     APP.toothSelectionMode === 'required_single' ? 'single' : 'multiple',
+        lang:     APP.lang,
+        selected: state.selectedTeeth,
+        labels: {
+          upperJaw:  T.dcUpperJaw,
+          lowerJaw:  T.dcLowerJaw,
+          right:     T.dcRight,
+          left:      T.dcLeft,
+          selected:  T.dcSelected,
+          none:      T.dcNone,
+          selectAll: T.dcSelectAll,
+          clear:     T.dcClear,
+          hint:      T.dcHint,
+        },
+        onChange: function(teeth) {
+          state.selectedTeeth = teeth;
+          var err = document.getElementById('dcError');
+          if (err) err.style.display = 'none';
+        },
+      });
+    }
+  }
   if (n === 3) buildSummary();
   if (n === 4) {
     buildConsentSummary();

@@ -561,6 +561,22 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
     </div>
   <?php else: ?>
 
+  <!-- Tandselectie (gebaseerd op tooth_selection_mode van het behandeltype) -->
+  <?php if (!$isCompleted && ($appt['tooth_selection_mode'] ?? 'not_applicable') !== 'not_applicable'): ?>
+  <div class="card" style="margin-bottom:1.25rem">
+    <div class="card-header">
+      <?= __('dc_title') ?>
+      <span style="font-size:.75rem;font-weight:400;color:var(--gray-5)">
+        <?= ($appt['tooth_selection_mode'] ?? '') === 'optional' ? __('dc_optional_hint') : __('dc_required_hint') ?>
+      </span>
+    </div>
+    <div style="padding:1.25rem">
+      <div id="dcPanel"></div>
+      <div id="dcError" class="alert alert-error" style="display:none;margin-top:.75rem"></div>
+    </div>
+  </div>
+  <?php endif ?>
+
   <!-- Progress -->
   <div class="progress-bar-wrap">
     <div class="progress-label" id="progressLabel">0 / <?= count($itemsData) ?></div>
@@ -742,6 +758,7 @@ const APP = {
   treatType:   '<?= addslashes($appt['type_name'] ?? '') ?>',
   toothSelectionMode: '<?= $appt['tooth_selection_mode'] ?? 'not_applicable' ?>',
   selectedTeeth: <?= json_encode($savedTeeth, JSON_UNESCAPED_UNICODE) ?>,
+  lang: '<?= $lang ?>',
 };
 
 const T = {
@@ -793,6 +810,17 @@ const T = {
   billingGrand:   '<?= addslashes(__('billing_h_grand_total')) ?>',
   mandAlertTitle: '<?= addslashes(__('mandatory_alert_title')) ?>',
   mandNotDone:    '<?= addslashes(__('mandatory_not_done')) ?>',
+  dcUpperJaw:    '<?= addslashes(__('dc_upper_jaw')) ?>',
+  dcLowerJaw:    '<?= addslashes(__('dc_lower_jaw')) ?>',
+  dcRight:       '<?= addslashes(__('dc_right')) ?>',
+  dcLeft:        '<?= addslashes(__('dc_left')) ?>',
+  dcSelected:    '<?= addslashes(__('dc_selected')) ?>',
+  dcNone:        '<?= addslashes(__('dc_none')) ?>',
+  dcSelectAll:   '<?= addslashes(__('dc_select_all')) ?>',
+  dcClear:       '<?= addslashes(__('dc_clear')) ?>',
+  dcHint:        '<?= addslashes(__('dc_hint')) ?>',
+  dcErrorSingle:   '<?= addslashes(__('dc_error_single')) ?>',
+  dcErrorMultiple: '<?= addslashes(__('dc_error_multiple')) ?>',
 };
 
 // ── State ───────────────────────────────────────────────────────────────────
