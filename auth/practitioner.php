@@ -84,8 +84,8 @@ $csrf = csrfToken();
     <p style="color:#64748b;font-size:.9rem;"><?= __('no_practitioners') ?></p>
   <?php endif ?>
 
-  <div class="auth-footer">
-    <a href="/easydent/auth/login.php"><?= __('login_as_manager') ?></a>
+  <div class="auth-footer" style="margin-top:2rem;border-top:1px solid #f1f5f9;padding-top:1.25rem">
+    <a href="/easydent/auth/login.php" style="font-size:.78rem;color:#94a3b8;font-weight:500"><?= __('login_as_manager') ?></a>
   </div>
 </div>
 </body>

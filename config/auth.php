@@ -30,7 +30,7 @@ function startSecureSession(): void
     $_SESSION['last_activity'] = time();
 }
 
-function requireAuth(string $redirectTo = '/easydent/auth/login.php'): void
+function requireAuth(string $redirectTo = '/easydent/auth/practitioner.php'): void
 {
     startSecureSession();
     if (empty($_SESSION['user_id'])) {

@@ -97,7 +97,7 @@ $csrf = csrfToken();
   </form>
 
   <div class="auth-footer">
-    <a href="/easydent/auth/practitioner.php"><?= __('login_as_practitioner') ?></a>
+    <a href="/easydent/auth/practitioner.php">← <?= __('login_as_practitioner') ?></a>
   </div>
 </div>
 </body>

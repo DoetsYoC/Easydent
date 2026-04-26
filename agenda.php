@@ -3,7 +3,7 @@ require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/config/helpers.php';
 require_once __DIR__ . '/config/auth.php';
 
-requireAuth('/easydent/auth/login.php');
+requireAuth('/easydent/auth/practitioner.php');
 
 $user = currentUser();
 

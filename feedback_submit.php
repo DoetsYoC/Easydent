@@ -5,7 +5,7 @@ require_once __DIR__ . '/config/auth.php';
 
 header('Content-Type: application/json');
 
-requireAuth('/easydent/auth/login.php');
+requireAuth('/easydent/auth/practitioner.php');
 verifyCsrf();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
