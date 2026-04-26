@@ -104,7 +104,7 @@ function __(string $key, array $replace = []): string
 function langSwitcherHtml(string $currentPage = ''): string
 {
     $lang   = currentLang();
-    $langs  = ['de' => '🇩🇪 DE', 'nl' => '🇳🇱 NL', 'en' => '🇬🇧 EN'];
+    $langs  = ['de' => 'DE', 'nl' => 'NL', 'en' => 'EN'];
     $return = urlencode($currentPage ?: ($_SERVER['REQUEST_URI'] ?? '/'));
     $html   = '<div class="lang-switcher">';
     foreach ($langs as $code => $label) {
