@@ -10,7 +10,8 @@ $allowed = ['de', 'nl', 'en'];
 $lang    = $_GET['lang'] ?? 'de';
 if (!in_array($lang, $allowed, true)) $lang = 'de';
 
-$_SESSION['lang'] = $lang;
+$_SESSION['lang']          = $lang;
+$_SESSION['lang_explicit'] = true;
 
 $return = $_GET['return'] ?? '/easydent/index.php';
 // Voorkom open redirects — alleen eigen paden toegestaan

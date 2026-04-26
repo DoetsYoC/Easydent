@@ -89,6 +89,19 @@ function loginUser(array $user): void
     $_SESSION['role']          = $user['role'];
     $_SESSION['display_name']  = $user['display_name'];
     $_SESSION['last_activity'] = time();
+
+    // Praktijktaal instellen als nog niet expliciet gekozen door gebruiker
+    if (empty($_SESSION['lang_explicit']) && !empty($user['practice_id'])) {
+        try {
+            $db   = getDB();
+            $stmt = $db->prepare("SELECT language FROM practices WHERE id = ? LIMIT 1");
+            $stmt->execute([$user['practice_id']]);
+            $practice = $stmt->fetch();
+            if ($practice && !empty($practice['language'])) {
+                $_SESSION['lang'] = strtolower($practice['language']);
+            }
+        } catch (Throwable) {}
+    }
 }
 
 function logoutUser(): void

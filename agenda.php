@@ -43,6 +43,11 @@ $stmt = $db->prepare("
 ");
 $stmt->execute([$user['id'], $selectedDate]);
 $appointments = $stmt->fetchAll();
+
+// Praktijknaam ophalen voor logo
+$practiceStmt = $db->prepare("SELECT name FROM practices WHERE id = ? LIMIT 1");
+$practiceStmt->execute([$user['practice_id']]);
+$practiceName = $practiceStmt->fetchColumn() ?: __('app_name');
 ?><!DOCTYPE html>
 <html lang="<?= $lang ?>">
 <head>
@@ -57,9 +62,11 @@ $appointments = $stmt->fetchAll();
 :root { --navy: #1a2e4a; --teal: #3aafa9; --teal-l: #e8f5f4; --gray-1: #f8fafc; --gray-2: #f1f5f9; --gray-3: #e2e8f0; --gray-5: #64748b; --shadow: 0 1px 4px rgba(0,0,0,.08); }
 body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: var(--gray-2); color: var(--navy); min-height: 100vh; -webkit-font-smoothing: antialiased; }
 header { background: var(--navy); padding: .9rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
-.header-logo { display: flex; align-items: center; gap: .65rem; color: #fff; text-decoration: none; }
-.logo-mark { width: 34px; height: 34px; background: var(--teal); border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: .85rem; color: #fff; }
-.header-logo span { font-size: 1.1rem; font-weight: 700; }
+.header-logo { display: flex; align-items: center; gap: .85rem; color: #fff; text-decoration: none; }
+.logo-mark { width: 46px; height: 46px; background: var(--teal); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; color: #fff; flex-shrink: 0; }
+.logo-text { display: flex; flex-direction: column; line-height: 1.2; }
+.logo-text .logo-practice { font-size: 1.2rem; font-weight: 700; color: #fff; }
+.logo-text .logo-sub { font-size: .75rem; color: rgba(255,255,255,.55); font-weight: 400; }
 .header-right { display: flex; align-items: center; gap: 1rem; }
 .header-user { color: rgba(255,255,255,.7); font-size: .85rem; }
 .header-links a { color: rgba(255,255,255,.6); text-decoration: none; font-size: .85rem; padding: .35rem .7rem; border-radius: 5px; transition: background .15s; }
@@ -121,7 +128,10 @@ input[type=date].date-pick:focus { outline: none; border-color: var(--teal); }
 <header>
   <a href="/easydent/agenda.php" class="header-logo">
     <div class="logo-mark">ED</div>
-    <span><?= __('app_name') ?></span>
+    <div class="logo-text">
+      <span class="logo-practice"><?= htmlspecialchars($practiceName) ?></span>
+      <span class="logo-sub"><?= __('app_name') ?></span>
+    </div>
   </a>
   <div class="header-right">
     <?= langSwitcherHtml('/easydent/agenda.php') ?>
