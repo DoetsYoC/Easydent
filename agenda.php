@@ -69,6 +69,7 @@ header { background: var(--navy); padding: .9rem 1.5rem; display: flex; align-it
 .logo-text .logo-sub { font-size: .75rem; color: rgba(255,255,255,.55); font-weight: 400; }
 .header-right { display: flex; align-items: center; gap: 1rem; }
 .header-user { color: rgba(255,255,255,.7); font-size: .85rem; }
+.header-links { margin-right: 6rem; }
 .header-links a { color: rgba(255,255,255,.6); text-decoration: none; font-size: .85rem; padding: .35rem .7rem; border-radius: 5px; transition: background .15s; }
 .header-links a:hover { background: rgba(255,255,255,.1); color: #fff; }
 .lang-switcher { display: flex; gap: .25rem; }

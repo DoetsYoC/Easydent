@@ -3,8 +3,8 @@
 // Verwacht: $csrf (csrfToken()) beschikbaar in de includerende pagina.
 ?>
 <style>
-.fb-btn{position:fixed;bottom:1.5rem;right:1.5rem;z-index:900;background:#1a2e4a;color:#fff;border:none;border-radius:50px;padding:.6rem 1.1rem;font-size:.82rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;gap:.4rem;transition:background .15s,transform .1s;font-family:inherit}
-.fb-btn:hover{background:#3aafa9;transform:translateY(-1px)}
+.fb-btn{position:fixed;top:.65rem;right:1.25rem;z-index:950;background:#3aafa9;color:#fff;border:none;border-radius:50px;padding:.35rem .85rem;font-size:.78rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.2);display:flex;align-items:center;gap:.35rem;transition:opacity .15s;font-family:inherit}
+.fb-btn:hover{opacity:.85}
 .fb-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:910;align-items:center;justify-content:center;padding:1rem}
 .fb-backdrop.open{display:flex}
 .fb-modal{background:#fff;border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.18);padding:2rem;width:100%;max-width:480px;font-family:inherit}

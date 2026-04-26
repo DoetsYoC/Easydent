@@ -45,9 +45,13 @@ if (!empty($user['practice_id'])) {
     } catch (Throwable) {}
 }
 
+$lang     = currentLang();
+$langLabel = match($lang) { 'nl' => 'Nederlands', 'en' => 'Engels', default => 'Duits' };
+
 $issueBody  = ($body !== '' ? $body . "\n\n" : '');
 $issueBody .= "---\n";
 $issueBody .= "**Ingediend door:** {$userName}" . ($practiceName !== '' ? " — {$practiceName}" : '') . " ({$userRole})\n";
+$issueBody .= "**Taal:** {$langLabel}\n";
 $issueBody .= "**Pagina:** {$page}\n";
 $issueBody .= "**Datum:** {$dateStr}\n";
 

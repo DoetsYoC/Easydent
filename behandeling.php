@@ -184,7 +184,7 @@ foreach ($groups as $g) {
 body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:var(--gray-2);color:var(--navy);min-height:100vh;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
 
 /* ── Topbar ── */
-.topbar{background:var(--navy);padding:.75rem 1.25rem;display:flex;align-items:center;gap:.85rem;flex-shrink:0}
+.topbar{background:var(--navy);padding:.75rem 6.5rem .75rem 1.25rem;display:flex;align-items:center;gap:.85rem;flex-shrink:0}
 .btn-back{color:rgba(255,255,255,.7);text-decoration:none;font-size:1.25rem;line-height:1;padding:.25rem .5rem;border-radius:5px;transition:color .15s}
 .btn-back:hover{color:#fff}
 .topbar-info{flex:1;min-width:0}
