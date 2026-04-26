@@ -570,7 +570,7 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
 
   <div class="card" style="padding:1.25rem">
     <p style="font-size:.88rem;color:var(--gray-7);margin-bottom:.85rem"><?= __('consent_intro') ?></p>
-    <div class="consent-text"><?= nl2br(htmlspecialchars(__('consent_declaration'))) ?></div>
+    <div class="consent-text"><?= nl2br(__('consent_declaration')) ?></div>
     <div class="sig-label"><?= __('signature_label') ?></div>
     <div class="sig-wrap" id="sigWrap">
       <canvas id="sigCanvas"></canvas>
