@@ -25,6 +25,10 @@ if (!defined('GITHUB_TOKEN') || GITHUB_TOKEN === '') {
     echo json_encode(['ok' => false, 'error' => 'GitHub-integratie is nog niet geconfigureerd.']);
     exit;
 }
+if (!function_exists('curl_init')) {
+    echo json_encode(['ok' => false, 'error' => 'cURL is niet beschikbaar op deze server.']);
+    exit;
+}
 
 $user     = currentUser();
 $userName = $user['display_name'] ?? 'Onbekend';
@@ -37,22 +41,16 @@ $issueBody .= "**Ingediend door:** {$userName} ({$userRole})\n";
 $issueBody .= "**Pagina:** {$page}\n";
 $issueBody .= "**Datum:** {$dateStr}\n";
 
-$payload = json_encode([
-    'title'  => $title,
-    'body'   => $issueBody,
-    'labels' => ['feedback'],
-]);
-
-if (!function_exists('curl_init')) {
-    echo json_encode(['ok' => false, 'error' => 'cURL is niet beschikbaar op deze server.']);
-    exit;
-}
-
+// ── Stap 1: Issue aanmaken via REST API ────────────────────────────────────
 $ch = curl_init('https://api.github.com/repos/' . GITHUB_REPO . '/issues');
 curl_setopt_array($ch, [
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_POST           => true,
-    CURLOPT_POSTFIELDS     => $payload,
+    CURLOPT_POSTFIELDS     => json_encode([
+        'title'  => $title,
+        'body'   => $issueBody,
+        'labels' => ['feedback'],
+    ]),
     CURLOPT_HTTPHEADER     => [
         'Content-Type: application/json',
         'Authorization: Bearer ' . GITHUB_TOKEN,
@@ -74,12 +72,71 @@ if ($response === false || $curlErr) {
     echo json_encode(['ok' => false, 'error' => 'Verbinding met GitHub mislukt.']);
     exit;
 }
-
 if ($httpCode !== 201) {
     error_log('GitHub feedback HTTP ' . $httpCode . ': ' . $response);
     echo json_encode(['ok' => false, 'error' => 'GitHub gaf een fout terug (HTTP ' . $httpCode . ').']);
     exit;
 }
 
-$data = json_decode($response, true);
-echo json_encode(['ok' => true, 'issue_url' => $data['html_url'] ?? '']);
+$issue   = json_decode($response, true);
+$nodeId  = $issue['node_id']  ?? '';
+$issueUrl = $issue['html_url'] ?? '';
+
+// ── Stap 2: Issue toevoegen aan project board ──────────────────────────────
+if ($nodeId && defined('GITHUB_PROJECT_ID') && GITHUB_PROJECT_ID !== '') {
+    $addMutation = json_encode([
+        'query' => 'mutation($project:ID!,$content:ID!){addProjectV2ItemById(input:{projectId:$project,contentId:$content}){item{id}}}',
+        'variables' => ['project' => GITHUB_PROJECT_ID, 'content' => $nodeId],
+    ]);
+
+    $ch = curl_init('https://api.github.com/graphql');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $addMutation,
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' . GITHUB_TOKEN,
+            'User-Agent: Easydent-App',
+        ],
+        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_SSL_VERIFYPEER => true,
+    ]);
+
+    $addResponse = curl_exec($ch);
+    curl_close($ch);
+
+    $addData   = json_decode($addResponse, true);
+    $itemNodeId = $addData['data']['addProjectV2ItemById']['item']['id'] ?? '';
+
+    // ── Stap 3: Status instellen op "Feedback" ─────────────────────────────
+    if ($itemNodeId && defined('GITHUB_FIELD_STATUS') && defined('GITHUB_OPTION_FEEDBACK')) {
+        $setMutation = json_encode([
+            'query' => 'mutation($project:ID!,$item:ID!,$field:ID!,$option:String!){updateProjectV2ItemFieldValue(input:{projectId:$project,itemId:$item,fieldId:$field,value:{singleSelectOptionId:$option}}){projectV2Item{id}}}',
+            'variables' => [
+                'project' => GITHUB_PROJECT_ID,
+                'item'    => $itemNodeId,
+                'field'   => GITHUB_FIELD_STATUS,
+                'option'  => GITHUB_OPTION_FEEDBACK,
+            ],
+        ]);
+
+        $ch = curl_init('https://api.github.com/graphql');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_POSTFIELDS     => $setMutation,
+            CURLOPT_HTTPHEADER     => [
+                'Content-Type: application/json',
+                'Authorization: Bearer ' . GITHUB_TOKEN,
+                'User-Agent: Easydent-App',
+            ],
+            CURLOPT_TIMEOUT        => 10,
+            CURLOPT_SSL_VERIFYPEER => true,
+        ]);
+        curl_exec($ch);
+        curl_close($ch);
+    }
+}
+
+echo json_encode(['ok' => true, 'issue_url' => $issueUrl]);
