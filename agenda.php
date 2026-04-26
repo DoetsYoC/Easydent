@@ -195,6 +195,6 @@ input[type=date].date-pick:focus { outline: none; border-color: var(--teal); }
     <?php endforeach ?>
   <?php endif ?>
 </main>
-
+<?php $csrf = csrfToken(); include __DIR__ . '/config/feedback_widget.php'; ?>
 </body>
 </html>

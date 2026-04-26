@@ -1279,5 +1279,6 @@ function escHtml(str) {
 goToStep(APP.isCompleted ? 5 : 1);
 if (APP.isCompleted) buildBilling();
 </script>
+<?php $csrf = $csrf ?? csrfToken(); include __DIR__ . '/config/feedback_widget.php'; ?>
 </body>
 </html>
