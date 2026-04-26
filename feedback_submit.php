@@ -35,9 +35,19 @@ $userName = $user['display_name'] ?? 'Onbekend';
 $userRole = $user['role']         ?? '';
 $dateStr  = date('d-m-Y H:i');
 
+$practiceName = '';
+if (!empty($user['practice_id'])) {
+    try {
+        $db   = getDB();
+        $stmt = $db->prepare("SELECT name FROM practices WHERE id = ? LIMIT 1");
+        $stmt->execute([$user['practice_id']]);
+        $practiceName = $stmt->fetchColumn() ?: '';
+    } catch (Throwable) {}
+}
+
 $issueBody  = ($body !== '' ? $body . "\n\n" : '');
 $issueBody .= "---\n";
-$issueBody .= "**Ingediend door:** {$userName} ({$userRole})\n";
+$issueBody .= "**Ingediend door:** {$userName}" . ($practiceName !== '' ? " — {$practiceName}" : '') . " ({$userRole})\n";
 $issueBody .= "**Pagina:** {$page}\n";
 $issueBody .= "**Datum:** {$dateStr}\n";
 
