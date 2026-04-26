@@ -3,8 +3,8 @@
 // Verwacht: $csrf (csrfToken()) beschikbaar in de includerende pagina.
 ?>
 <style>
-.fb-btn{position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:950;background:#3aafa9;color:#fff;border:none;border-radius:8px 0 0 8px;padding:.65rem .75rem;font-size:.78rem;font-weight:700;cursor:pointer;box-shadow:-2px 0 10px rgba(0,0,0,.18);display:flex;flex-direction:column;align-items:center;gap:.3rem;transition:opacity .15s,padding .15s;font-family:inherit;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:.04em}
-.fb-btn:hover{opacity:.85;padding-right:.95rem}
+.fb-btn{position:fixed;right:1rem;top:50%;transform:translateY(-50%);z-index:950;background:#3aafa9;color:#fff;border:none;border-radius:8px;padding:.65rem .75rem;font-size:.78rem;font-weight:700;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.22);display:flex;flex-direction:column;align-items:center;gap:.3rem;transition:opacity .15s;font-family:inherit;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:.04em}
+.fb-btn:hover{opacity:.85}
 .fb-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:910;align-items:center;justify-content:center;padding:1rem}
 .fb-backdrop.open{display:flex}
 .fb-modal{background:#fff;border-radius:14px;box-shadow:0 8px 40px rgba(0,0,0,.18);padding:2rem;width:100%;max-width:480px;font-family:inherit}
