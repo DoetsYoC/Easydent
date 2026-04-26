@@ -24,23 +24,23 @@
 .fb-msg.err{background:#fef2f2;border:1px solid #fca5a5;color:#b91c1c}
 </style>
 
-<button class="fb-btn" onclick="fbOpen()">💬 Feedback</button>
+<button class="fb-btn" onclick="fbOpen()">💬 <?= __('fb_btn') ?></button>
 
 <div class="fb-backdrop" id="fbBackdrop" onclick="if(event.target===this)fbClose()">
   <div class="fb-modal">
-    <h3>💬 Feedback of probleem melden</h3>
+    <h3>💬 <?= __('fb_title') ?></h3>
     <div class="fb-msg" id="fbMsg"></div>
     <div class="fb-group">
-      <label>Onderwerp *</label>
-      <input type="text" id="fbTitle" placeholder="Korte omschrijving van het probleem of idee" maxlength="150">
+      <label><?= __('fb_subject') ?></label>
+      <input type="text" id="fbTitle" placeholder="<?= __('fb_subject_ph') ?>" maxlength="150">
     </div>
     <div class="fb-group">
-      <label>Toelichting</label>
-      <textarea id="fbBody" rows="4" placeholder="Beschrijf wat er mis gaat, of welk idee je hebt..."></textarea>
+      <label><?= __('fb_body') ?></label>
+      <textarea id="fbBody" rows="4" placeholder="<?= __('fb_body_ph') ?>"></textarea>
     </div>
     <div class="fb-actions">
-      <button class="fb-btn-cancel" onclick="fbClose()">Annuleren</button>
-      <button class="fb-btn-submit" id="fbSubmit" onclick="fbSubmit()">Versturen</button>
+      <button class="fb-btn-cancel" onclick="fbClose()"><?= __('fb_cancel') ?></button>
+      <button class="fb-btn-submit" id="fbSubmit" onclick="fbSubmit()"><?= __('fb_submit') ?></button>
     </div>
   </div>
 </div>
@@ -49,6 +49,14 @@
 (function() {
   const csrf = '<?= addslashes($csrf) ?>';
   const page = window.location.pathname;
+  const T = {
+    required:   '<?= addslashes(__('fb_required')) ?>',
+    submitting: '<?= addslashes(__('fb_submitting')) ?>',
+    submit:     '<?= addslashes(__('fb_submit')) ?>',
+    success:    '<?= addslashes(__('fb_success')) ?>',
+    error:      '<?= addslashes(__('fb_error')) ?>',
+    connError:  '<?= addslashes(__('fb_conn_error')) ?>',
+  };
 
   window.fbOpen  = () => document.getElementById('fbBackdrop').classList.add('open');
   window.fbClose = () => {
@@ -57,6 +65,7 @@
     document.getElementById('fbTitle').value = '';
     document.getElementById('fbBody').value  = '';
     document.getElementById('fbSubmit').disabled = false;
+    document.getElementById('fbSubmit').textContent = T.submit;
   };
 
   window.fbSubmit = async () => {
@@ -66,14 +75,14 @@
     const btn   = document.getElementById('fbSubmit');
 
     if (!title) {
-      msg.textContent = 'Vul een onderwerp in.';
+      msg.textContent = T.required;
       msg.className = 'fb-msg err';
       msg.style.display = 'block';
       return;
     }
 
     btn.disabled = true;
-    btn.textContent = 'Versturen...';
+    btn.textContent = T.submitting;
     msg.style.display = 'none';
 
     const fd = new FormData();
@@ -86,25 +95,25 @@
       const res  = await fetch('/easydent/feedback_submit.php', { method: 'POST', body: fd });
       const data = await res.json();
       if (data.ok) {
-        msg.textContent = '✓ Bedankt! Je feedback is aangemaakt als GitHub issue.';
+        msg.textContent = T.success;
         msg.className = 'fb-msg ok';
         msg.style.display = 'block';
         document.getElementById('fbTitle').value = '';
         document.getElementById('fbBody').value  = '';
         setTimeout(fbClose, 3000);
       } else {
-        msg.textContent = data.error || 'Er ging iets mis.';
+        msg.textContent = data.error || T.error;
         msg.className = 'fb-msg err';
         msg.style.display = 'block';
         btn.disabled = false;
-        btn.textContent = 'Versturen';
+        btn.textContent = T.submit;
       }
     } catch {
-      msg.textContent = 'Verbindingsfout. Probeer het opnieuw.';
+      msg.textContent = T.connError;
       msg.className = 'fb-msg err';
       msg.style.display = 'block';
       btn.disabled = false;
-      btn.textContent = 'Versturen';
+      btn.textContent = T.submit;
     }
   };
 })();

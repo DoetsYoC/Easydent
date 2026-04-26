@@ -343,6 +343,21 @@ return [
     'session_reopened'     => 'Behandlung wieder geöffnet.',
     'no_sessions'          => 'Keine Behandlungen gefunden.',
 
+    // Feedback-Widget
+    'fb_btn'               => 'Feedback',
+    'fb_title'             => 'Feedback oder Problem melden',
+    'fb_subject'           => 'Betreff *',
+    'fb_subject_ph'        => 'Kurze Beschreibung des Problems oder der Idee',
+    'fb_body'              => 'Details',
+    'fb_body_ph'           => 'Beschreiben Sie, was nicht stimmt oder welche Idee Sie haben...',
+    'fb_cancel'            => 'Abbrechen',
+    'fb_submit'            => 'Senden',
+    'fb_submitting'        => 'Senden...',
+    'fb_required'          => 'Bitte geben Sie einen Betreff ein.',
+    'fb_success'           => '✓ Danke! Ihr Feedback wurde als Issue angelegt.',
+    'fb_error'             => 'Etwas ist schiefgelaufen.',
+    'fb_conn_error'        => 'Verbindungsfehler. Bitte versuchen Sie es erneut.',
+
     // Behandlungsposition — Grundbetrag
     'ti_fee_base'          => 'Grundbetrag (1-fach, €)',
     'ti_fee_base_hint'     => 'GOZ-Einfachsatz in Euro',

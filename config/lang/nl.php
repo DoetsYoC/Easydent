@@ -342,6 +342,21 @@ return [
     'session_reopened'     => 'Behandeling heropend.',
     'no_sessions'          => 'Geen behandelingen gevonden.',
 
+    // Feedback widget
+    'fb_btn'               => 'Feedback',
+    'fb_title'             => 'Feedback of probleem melden',
+    'fb_subject'           => 'Onderwerp *',
+    'fb_subject_ph'        => 'Korte omschrijving van het probleem of idee',
+    'fb_body'              => 'Toelichting',
+    'fb_body_ph'           => 'Beschrijf wat er mis gaat, of welk idee je hebt...',
+    'fb_cancel'            => 'Annuleren',
+    'fb_submit'            => 'Versturen',
+    'fb_submitting'        => 'Versturen...',
+    'fb_required'          => 'Vul een onderwerp in.',
+    'fb_success'           => '✓ Bedankt! Je feedback is aangemaakt als issue.',
+    'fb_error'             => 'Er ging iets mis.',
+    'fb_conn_error'        => 'Verbindingsfout. Probeer het opnieuw.',
+
     // Treatment item — basisbedrag
     'ti_fee_base'          => 'Basisbedrag (1-voud, €)',
     'ti_fee_base_hint'     => 'GOZ 1-fach bedrag in euro',

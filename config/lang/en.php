@@ -342,6 +342,21 @@ return [
     'session_reopened'     => 'Treatment reopened.',
     'no_sessions'          => 'No treatments found.',
 
+    // Feedback widget
+    'fb_btn'               => 'Feedback',
+    'fb_title'             => 'Report feedback or issue',
+    'fb_subject'           => 'Subject *',
+    'fb_subject_ph'        => 'Brief description of the problem or idea',
+    'fb_body'              => 'Details',
+    'fb_body_ph'           => 'Describe what is going wrong or what idea you have...',
+    'fb_cancel'            => 'Cancel',
+    'fb_submit'            => 'Send',
+    'fb_submitting'        => 'Sending...',
+    'fb_required'          => 'Please enter a subject.',
+    'fb_success'           => '✓ Thank you! Your feedback has been created as an issue.',
+    'fb_error'             => 'Something went wrong.',
+    'fb_conn_error'        => 'Connection error. Please try again.',
+
     // Treatment item — base fee
     'ti_fee_base'          => 'Base fee (1×, €)',
     'ti_fee_base_hint'     => 'GOZ single rate in euros',
