@@ -153,6 +153,12 @@ return [
     'dc_select_all'      => 'Alles',
     'dc_clear'           => 'Wis selectie',
     'dc_hint'            => 'Tik op een tand om te selecteren of deselecteren.',
+    'dc_hint_single'     => 'Tik op precies één tand die behandeld wordt.',
+    'dc_hint_multiple'   => 'Tik op elke tand die behandeld wordt. Meerdere tanden mogelijk.',
+    'dc_hint_optional'   => 'Optioneel: tik op een tand om te koppelen aan deze behandeling.',
+    'dc_subtitle_single'   => 'Selecteer precies 1 tand',
+    'dc_subtitle_multiple' => 'Selecteer 1 of meer tanden',
+    'dc_subtitle_optional' => 'Optionele selectie',
     'dc_error_single'    => 'Selecteer precies één tand om door te gaan.',
     'dc_error_multiple'  => 'Selecteer ten minste één tand om door te gaan.',
     'tt_none'              => 'Nog geen behandeltypes.',
@@ -185,6 +191,7 @@ return [
     'ti_proposed'          => 'Voorgesteld bij openen behandeling',
     'ti_mandatory'         => 'Verplichte prestatie (kan niet worden uitgeschakeld)',
     'ti_motivation_req'    => 'Motivering verplicht bij factor boven standaard',
+    'ti_bill_per_tooth'    => 'Per tand declareren (één regel per geselecteerde tand)',
     'ti_suggestion'        => 'Suggestietekst voor behandelaar',
     'ti_suggestion_de'     => 'Suggestie (Duits)',
     'ti_suggestion_nl'     => 'Suggestie (Nederlands)',
@@ -371,6 +378,8 @@ return [
     'no_sessions'          => 'Geen behandelingen gevonden.',
 
     // Feedback widget
+    'fb_name'              => 'Uw naam',
+    'fb_name_ph'           => 'Vul uw naam in',
     'fb_btn'               => 'Feedback',
     'fb_title'             => 'Feedback of probleem melden',
     'fb_subject'           => 'Onderwerp *',
@@ -405,4 +414,23 @@ return [
     'billing_h_qty'        => 'Aantal',
     'billing_h_factor'     => 'Factor',
     'billing_h_grand_total'=> 'Totaalbedrag',
+
+    // Per-tand declaratie
+    'billing_tooth'        => 'Tand',
+
+    // Endodontie — klinische documentatie
+    'endo_doc_title'       => 'Klinische documentatie',
+    'endo_canal_count'     => 'Aantal kanalen',
+    'endo_stage'           => 'Behandelfase',
+    'endo_stage_1'         => 'Sessie 1',
+    'endo_stage_2'         => 'Sessie 2',
+    'endo_stage_final'     => 'Afsluiting',
+    'endo_xray'            => 'Röntgenfoto',
+    'endo_temp_closure'    => 'Tijdelijke vulling',
+    'endo_medication'      => 'Medicamenteuze vulling',
+    'endo_complications'   => 'Complicaties / bevindingen',
+    'endo_follow_up'       => 'Nazorg / aanbevelingen',
+    'endo_complications_ph'=> 'Optionele opmerkingen over complicaties of klinische bevindingen …',
+    'endo_follow_up_ph'    => 'Aanbevelingen voor nazorg …',
+    'endo_canal_qty_note'  => 'kanalen (aantal voor declaratie)',
 ];

@@ -31,6 +31,10 @@
     <h3>💬 <?= __('fb_title') ?></h3>
     <div class="fb-msg" id="fbMsg"></div>
     <div class="fb-group">
+      <label><?= __('fb_name') ?></label>
+      <input type="text" id="fbName" placeholder="<?= __('fb_name_ph') ?>" maxlength="80" autocomplete="name">
+    </div>
+    <div class="fb-group">
       <label><?= __('fb_subject') ?></label>
       <input type="text" id="fbTitle" placeholder="<?= __('fb_subject_ph') ?>" maxlength="150">
     </div>
@@ -58,7 +62,11 @@
     connError:  '<?= addslashes(__('fb_conn_error')) ?>',
   };
 
-  window.fbOpen  = () => document.getElementById('fbBackdrop').classList.add('open');
+  window.fbOpen  = () => {
+    document.getElementById('fbBackdrop').classList.add('open');
+    const saved = localStorage.getItem('fb_name');
+    if (saved) document.getElementById('fbName').value = saved;
+  };
   window.fbClose = () => {
     document.getElementById('fbBackdrop').classList.remove('open');
     document.getElementById('fbMsg').style.display = 'none';
@@ -69,10 +77,13 @@
   };
 
   window.fbSubmit = async () => {
+    const name  = document.getElementById('fbName').value.trim();
     const title = document.getElementById('fbTitle').value.trim();
     const body  = document.getElementById('fbBody').value.trim();
     const msg   = document.getElementById('fbMsg');
     const btn   = document.getElementById('fbSubmit');
+
+    if (name) localStorage.setItem('fb_name', name);
 
     if (!title) {
       msg.textContent = T.required;
@@ -87,6 +98,7 @@
 
     const fd = new FormData();
     fd.append('csrf_token', csrf);
+    fd.append('name',  name);
     fd.append('title', title);
     fd.append('body',  body);
     fd.append('page',  page);

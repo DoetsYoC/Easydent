@@ -19,9 +19,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['_ajax'])) {
     verifyCsrf();
 
     $action        = $_POST['action']  ?? 'save';
-    $codes         = json_decode($_POST['codes']  ?? '[]', true) ?: [];
-    $intake        = json_decode($_POST['intake'] ?? '{}', true) ?: [];
-    $signal        = json_decode($_POST['signal'] ?? '{}', true) ?: [];
+    $codes         = json_decode($_POST['codes']     ?? '[]', true) ?: [];
+    $intake        = json_decode($_POST['intake']    ?? '{}', true) ?: [];
+    $signal        = json_decode($_POST['signal']    ?? '{}', true) ?: [];
+    $toothMetaPost = json_decode($_POST['tooth_meta'] ?? '{}', true) ?: [];
     $consentSigned = !empty($_POST['consent_signed']) ? 1 : 0;
     $signatureData = $_POST['signature'] ?? null;
 
@@ -36,25 +37,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['_ajax'])) {
     $sid = (int)$sess['id'];
     $pid = (int)$sess['practice_id'];
 
+    $teethCodes = !empty($_POST['teeth_codes']) ? (json_decode($_POST['teeth_codes'], true) ?: null) : null;
+    $isPerTooth = is_array($teethCodes) && !empty($teethCodes);
+
     $db->prepare("DELETE FROM session_codes WHERE session_id=?")->execute([$sid]);
     $ord = 0;
+    // Globale codes (tooth_number = NULL)
     foreach ($codes as $c) {
         if (($c['status'] ?? '') !== 'confirmed') continue;
-        $fac     = max((float)($c['fmin'] ?? 1.0), min((float)($c['fmax'] ?? 3.5), (float)($c['factor'] ?? 2.3)));
-        $feeBase = (float)($c['fee_base'] ?? 0);
+        $fac      = max((float)($c['fmin'] ?? 1.0), min((float)($c['fmax'] ?? 3.5), (float)($c['factor'] ?? 2.3)));
+        $feeBase  = (float)($c['fee_base'] ?? 0);
         $feeTotal = round($feeBase * $fac, 2);
         $db->prepare("INSERT INTO session_codes (session_id,practice_id,goz_code,description,quantity,factor,fee_base,fee_total,sort_order) VALUES (?,?,?,?,1.00,?,?,?,?)")
            ->execute([$sid, $pid, $c['goz_code'] ?? '', $c['name'] ?? '', $fac, $feeBase, $feeTotal, $ord++]);
     }
+    // Per-tand codes (tooth_number = tandnummer)
+    if ($isPerTooth) {
+        foreach ($teethCodes as $rawTn => $items) {
+            if (!is_array($items)) continue;
+            $toothNum = preg_replace('/[^0-9]/', '', (string)$rawTn);
+            if ($toothNum === '') continue;
+            $canalCount = max(1, (int)($toothMetaPost[$toothNum]['canal_count'] ?? 1));
+            foreach ($items as $c) {
+                if (($c['status'] ?? '') !== 'confirmed') continue;
+                $fac      = max((float)($c['fmin'] ?? 1.0), min((float)($c['fmax'] ?? 3.5), (float)($c['factor'] ?? 2.3)));
+                $feeBase  = (float)($c['fee_base'] ?? 0);
+                $qty      = !empty($c['is_per_canal']) ? $canalCount : 1;
+                $feeTotal = round($feeBase * $qty * $fac, 2);
+                $db->prepare("INSERT INTO session_codes (session_id,practice_id,tooth_number,goz_code,description,quantity,factor,fee_base,fee_total,sort_order) VALUES (?,?,?,?,?,?,?,?,?,?)")
+                   ->execute([$sid, $pid, $toothNum, $c['goz_code'] ?? '', $c['name'] ?? '', $qty, $fac, $feeBase, $feeTotal, $ord++]);
+            }
+        }
+    }
 
     $mandatorySkipped = json_decode($_POST['mandatory_skipped'] ?? '[]', true) ?: [];
-    $notes = json_encode(['intake' => $intake, 'signal' => $signal, 'mandatory_skipped' => $mandatorySkipped]);
+    $notesData = ['intake' => $intake, 'signal' => $signal, 'mandatory_skipped' => $mandatorySkipped];
+    if (!empty($toothMetaPost)) $notesData['tooth_meta'] = $toothMetaPost;
+    $notes = json_encode($notesData);
 
     $rawTeeth = json_decode($_POST['selected_teeth'] ?? '[]', true);
     $selectedTeeth = is_array($rawTeeth)
         ? array_values(array_filter($rawTeeth, fn($t) => is_array($t) && isset($t['toothNumber']) && is_string($t['toothNumber']) && $t['toothNumber'] !== ''))
         : [];
     $selectedTeethJson = empty($selectedTeeth) ? null : json_encode($selectedTeeth, JSON_UNESCAPED_UNICODE);
+
+    // Tandmodus ophalen voor backend-validatie
+    $stTT = $db->prepare("SELECT tt.tooth_selection_mode FROM appointments a LEFT JOIN treatment_types tt ON tt.id=a.treatment_type_id WHERE a.id=?");
+    $stTT->execute([$appointmentId]);
+    $toothMode  = $stTT->fetchColumn() ?: 'not_applicable';
+    $toothCount = count($selectedTeeth);
+
+    // Backend-validatie bij afronden
+    if ($action === 'complete') {
+        if ($toothMode === 'required_single' && $toothCount !== 1) {
+            echo json_encode(['ok' => false, 'error' => 'tooth_single']); exit;
+        }
+        if ($toothMode === 'required_multiple' && $toothCount === 0) {
+            echo json_encode(['ok' => false, 'error' => 'tooth_multiple']); exit;
+        }
+    }
 
     $db->prepare("UPDATE treatment_sessions SET notes=?,consent_signed=?,consent_at=?,consent_signature=?,selected_teeth=? WHERE id=?")
        ->execute([$notes, $consentSigned, $consentSigned ? date('Y-m-d H:i:s') : null, $signatureData ?: null, $selectedTeethJson, $sid]);
@@ -64,7 +105,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['_ajax'])) {
         $db->prepare("UPDATE appointments SET status='completed' WHERE id=?")->execute([$appointmentId]);
 
         // Audit log
-        $confirmedCodes = array_filter($codes, fn($c) => ($c['status'] ?? '') === 'confirmed');
+        $allConfirmed = array_values(array_filter($codes, fn($c) => ($c['status'] ?? '') === 'confirmed'));
+        if ($isPerTooth) {
+            foreach ($teethCodes as $tn => $items) {
+                if (!is_array($items)) continue;
+                foreach ($items as $c) {
+                    if (($c['status'] ?? '') === 'confirmed') $allConfirmed[] = $c + ['tooth' => $tn];
+                }
+            }
+        }
         logAudit(
             $sess['practice_id'],
             $user['id'],
@@ -73,11 +122,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['_ajax'])) {
             $sid,
             [
                 'appointment_id' => $appointmentId,
-                'codes_confirmed' => count($confirmedCodes),
+                'codes_confirmed' => count($allConfirmed),
                 'codes'          => array_values(array_map(fn($c) => [
                     'goz'    => $c['goz_code'],
                     'factor' => round((float)$c['factor'], 2),
-                ], $confirmedCodes)),
+                ] + (isset($c['tooth']) ? ['tooth' => $c['tooth']] : []), $allConfirmed)),
             ]
         );
 
@@ -87,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['_ajax'])) {
 }
 
 // ── Data laden ──────────────────────────────────────────────────────────────
-$st = $db->prepare("SELECT a.*, CONCAT(p.first_name,' ',p.last_name) AS patient_name, p.birth_date, tt.name_{$lang} AS type_name, tt.tooth_selection_mode FROM appointments a JOIN patients p ON p.id=a.patient_id LEFT JOIN treatment_types tt ON tt.id=a.treatment_type_id WHERE a.id=?");
+$st = $db->prepare("SELECT a.*, CONCAT(p.first_name,' ',p.last_name) AS patient_name, p.birth_date, tt.name_{$lang} AS type_name, tt.name_en AS type_name_en, tt.tooth_selection_mode FROM appointments a JOIN patients p ON p.id=a.patient_id LEFT JOIN treatment_types tt ON tt.id=a.treatment_type_id WHERE a.id=?");
 $st->execute([$appointmentId]);
 $appt = $st->fetch();
 if (!$appt) { header('Location: /easydent/agenda.php'); exit; }
@@ -114,10 +163,17 @@ if (!$sess) {
 $sid         = (int)$sess['id'];
 $isCompleted = $sess['status'] === 'completed';
 
-$savedCodes = [];
-$st = $db->prepare("SELECT * FROM session_codes WHERE session_id=? ORDER BY sort_order");
+$savedCodes     = [];
+$savedTeethCodes = [];
+$st = $db->prepare("SELECT * FROM session_codes WHERE session_id=? ORDER BY tooth_number, sort_order");
 $st->execute([$sid]);
-foreach ($st->fetchAll() as $sc) { $savedCodes[$sc['goz_code']] = $sc; }
+foreach ($st->fetchAll() as $sc) {
+    if ($sc['tooth_number'] !== null) {
+        $savedTeethCodes[$sc['tooth_number']][$sc['goz_code']] = $sc;
+    } else {
+        $savedCodes[$sc['goz_code']] = $sc;
+    }
+}
 
 $groups = [];
 if (!empty($appt['treatment_type_id'])) {
@@ -138,9 +194,12 @@ if (!empty($appt['treatment_type_id'])) {
     foreach ($st->fetchAll() as $ex) { $excl[$ex['item_id']][] = $ex['excludes_item_id']; }
 }
 
+$isEndoType = ($appt['type_name_en'] ?? '') === 'Endodontics';
+
 $savedIntake = [];
 $savedSignal = [];
 $savedMandSkipped = [];
+$savedToothMeta = [];
 if (!empty($sess['notes'])) {
     $nd = json_decode($sess['notes'], true) ?: [];
     $savedIntake = $nd['intake'] ?? [];
@@ -148,6 +207,7 @@ if (!empty($sess['notes'])) {
     foreach ($nd['mandatory_skipped'] ?? [] as $m) {
         $savedMandSkipped[(int)$m['id']] = $m['reason'] ?? '';
     }
+    $savedToothMeta = $nd['tooth_meta'] ?? [];
 }
 $savedTeeth = [];
 if (!empty($sess['selected_teeth'])) {
@@ -155,8 +215,10 @@ if (!empty($sess['selected_teeth'])) {
     $savedTeeth = is_array($decoded) ? $decoded : [];
 }
 
-$nc  = 'name_'       . $lang;
-$sc2 = 'suggestion_' . $lang;
+$nc  = 'name_'          . $lang;
+$sc2 = 'suggestion_'    . $lang;
+$blc = 'button_label_'  . $lang;
+$slc = 'segment_label_' . $lang;
 $age = $appt['birth_date'] ? (int)floor((time() - strtotime($appt['birth_date'])) / 31557600) : null;
 
 $itemsData = [];
@@ -171,9 +233,14 @@ foreach ($groups as $g) {
             'goz_code'   => $gz,
             'name'       => $it[$nc] ?? $it['name_de'] ?? '',
             'suggestion' => $it[$sc2] ?? null,
-            'mandatory'  => (bool)$it['is_mandatory'],
-            'proposed'   => (bool)$it['is_proposed'],
-            'mot_req'    => (bool)$it['motivation_required'],
+            'mandatory'      => (bool)$it['is_mandatory'],
+            'proposed'       => (bool)$it['is_proposed'],
+            'mot_req'        => (bool)$it['motivation_required'],
+            'bill_per_tooth'       => (bool)($it['bill_per_tooth'] ?? false),
+            'is_per_canal'         => (bool)($it['is_per_canal'] ?? false),
+            'button_label'         => $it[$blc] ?? null,
+            'group_is_segment'     => (bool)($g['is_segment'] ?? false),
+            'group_segment_label'  => $g[$slc] ?? $g['segment_label_de'] ?? '',
             'fmin'       => (float)$it['factor_min'],
             'fmax'       => (float)$it['factor_max'],
             'fdef'       => (float)$it['factor_default'],
@@ -319,6 +386,15 @@ textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(5
 .btn-undo{background:#fff;border:1.5px solid var(--gray-3);border-radius:7px;padding:.45rem .85rem;font-size:.8rem;font-weight:600;cursor:pointer;color:var(--gray-7);font-family:inherit;transition:all .15s}
 .btn-undo:hover{border-color:var(--teal);color:var(--teal)}
 
+/* ── Segment control ── */
+.segment-row{display:flex;align-items:center;gap:1rem;padding:.85rem 1.25rem;border-bottom:1px solid var(--gray-3)}
+.segment-row:last-child{border-bottom:none}
+.segment-row-label{font-size:.82rem;color:var(--gray-6);min-width:110px;flex-shrink:0;font-weight:500}
+.segment-buttons{display:flex;gap:.35rem;flex-wrap:wrap}
+.seg-btn{padding:.35rem .85rem;border:1.5px solid var(--gray-4);border-radius:999px;background:#fff;color:var(--gray-7);font-size:.8rem;font-weight:500;cursor:pointer;transition:all .12s;line-height:1.4;font-family:inherit}
+.seg-btn:hover:not(:disabled){border-color:var(--teal);color:var(--teal-d)}
+.seg-btn.seg-active{background:var(--navy);border-color:var(--navy);color:#fff}
+.seg-btn:disabled{opacity:.4;cursor:default}
 /* ── Factor panel ── */
 .factor-panel{margin-top:.85rem;padding-top:.75rem;border-top:1px solid rgba(0,0,0,.06)}
 .factor-row{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
@@ -409,7 +485,6 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
 .dc-tooth.dc-sel{background:var(--teal-l);border-color:var(--teal);color:var(--teal-d)}
 .dc-tooth.dc-sel::after{content:'';position:absolute;top:3px;right:3px;width:6px;height:6px;border-radius:50%;background:var(--teal)}
 .dc-sidebar{flex:1;min-width:180px;max-width:320px}
-.dc-sel-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-5);margin-bottom:.5rem}
 .dc-chips{display:flex;flex-wrap:wrap;gap:.4rem;min-height:2rem;margin-bottom:.75rem}
 .dc-chips-empty{font-size:.82rem;color:var(--gray-5);padding:.25rem 0}
 .dc-chip{display:inline-flex;align-items:center;gap:.3rem;background:var(--teal-l);border:1px solid var(--teal);border-radius:99px;padding:.2rem .55rem .2rem .5rem;font-size:.78rem;font-weight:600}
@@ -417,12 +492,40 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
 .dc-chip-name{color:var(--navy)}
 .dc-chip-x{background:none;border:none;color:var(--teal-d);cursor:pointer;font-size:.85rem;line-height:1;padding:0 0 0 .1rem;font-family:inherit;display:flex;align-items:center}
 .dc-chip-x:hover{color:var(--navy)}
-.dc-actions{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.75rem}
-.dc-qbtn{padding:.35rem .65rem;border:1.5px solid var(--gray-3);border-radius:7px;background:#fff;font-size:.75rem;font-weight:600;cursor:pointer;color:var(--gray-7);font-family:inherit;touch-action:manipulation;transition:all .12s}
+.dc-actions{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.75rem}
+.dc-btn-row{display:flex;gap:.35rem;flex-wrap:nowrap}
+.dc-qbtn{padding:.35rem .65rem;border:1.5px solid var(--gray-3);border-radius:7px;background:#fff;font-size:.75rem;font-weight:600;cursor:pointer;color:var(--gray-7);font-family:inherit;touch-action:manipulation;transition:all .12s;white-space:nowrap}
 .dc-qbtn:hover{border-color:var(--teal);color:var(--teal)}
 .dc-qbtn-clear{border-color:#fca5a5;color:#dc2626}
 .dc-qbtn-clear:hover{background:#fee2e2;border-color:#dc2626}
+.dc-sel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+.dc-sel-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--gray-5)}
+.dc-names-toggle{background:none;border:none;font-size:.72rem;color:var(--teal-d);cursor:pointer;padding:0;font-family:inherit;text-decoration:underline;text-underline-offset:2px}
+.dc-names-toggle:hover{color:var(--navy)}
+.dc-chip-name{transition:none}
+.dc-chip-name.dc-hidden{display:none}
 .dc-hint{font-size:.75rem;color:var(--gray-5);line-height:1.5}
+
+/* ── Endo klinische documentatie ── */
+.endo-panel{background:var(--gray-1);border-top:2px solid var(--teal-l);padding:1rem 1.25rem 1.25rem}
+.endo-panel-title{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--teal-d);margin-bottom:.85rem}
+.endo-row{display:flex;align-items:center;gap:1rem;margin-bottom:.75rem;flex-wrap:wrap}
+.endo-row-label{font-size:.82rem;font-weight:600;color:var(--gray-7);min-width:140px;flex-shrink:0}
+.endo-checks{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem}
+.endo-check{display:flex;align-items:center;gap:.4rem;font-size:.85rem;color:var(--gray-7);cursor:pointer;user-select:none}
+.endo-check input{width:16px;height:16px;accent-color:var(--teal);cursor:pointer;flex-shrink:0}
+.endo-textarea{width:100%;padding:.5rem .75rem;border:1.5px solid var(--gray-3);border-radius:7px;font-size:.85rem;color:var(--navy);resize:vertical;min-height:55px;font-family:inherit;margin-top:.3rem;transition:border-color .15s}
+.endo-textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(58,175,169,.12)}
+.endo-field-label{font-size:.78rem;font-weight:600;color:var(--gray-7);display:block;margin-bottom:.2rem}
+.endo-canal-note{font-size:.72rem;color:var(--gray-5);margin-left:.5rem}
+
+/* ── Per-tand secties (step 2, per-tooth modus) ── */
+.tooth-section{margin-bottom:1.5rem}
+.tooth-section-header{display:flex;align-items:center;gap:.65rem;padding:.5rem 0 .35rem;font-weight:700;font-size:.95rem;color:var(--navy)}
+.tooth-num-badge{background:var(--teal);color:#fff;font-size:.78rem;font-weight:800;padding:.25rem .55rem;border-radius:6px;font-family:monospace;flex-shrink:0}
+.tooth-num-badge.sm{font-size:.68rem;padding:.15rem .4rem;border-radius:4px}
+.tooth-section-name{color:var(--gray-7)}
+.tooth-summary-title{display:flex;align-items:center;gap:.5rem}
 </style>
 </head>
 <body>
@@ -585,63 +688,115 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
     </div>
   </div>
 
-  <!-- Item groepen -->
-  <?php foreach ($groups as $g): ?>
+  <!-- Per-tand panels: JS vult dit in als tanden geselecteerd zijn -->
+  <div id="toothPanelsContainer" style="display:none"></div>
+
+  <!-- Globale item groepen (verborgen in per-tand modus) -->
+  <div id="staticItemGroups">
+  <?php
+  $isToothMode = ($appt['tooth_selection_mode'] ?? 'not_applicable') !== 'not_applicable';
+  foreach ($groups as $g):
+    $globalItems = $isToothMode
+      ? array_filter($g['items'], fn($x) => empty($x['bill_per_tooth']))
+      : $g['items'];
+    if (empty($globalItems)) continue;
+  ?>
     <div class="card">
       <div class="card-header"><?= htmlspecialchars($g[$nc] ?? $g['name_de'] ?? '') ?></div>
-      <?php foreach ($g['items'] as $it):
-        $iid = $it['id'];
-        $sv  = $savedCodes[$it['goz_code']] ?? null;
-        $initSt = $sv ? 'confirmed' : (($it['is_mandatory'] || $it['is_proposed']) ? 'proposed' : 'available');
-      ?>
-      <div class="item-card" id="icard_<?= $iid ?>">
-        <div class="item-top">
-          <span class="item-badge" id="ibadge_<?= $iid ?>">GOZ <?= htmlspecialchars($it['goz_code']) ?></span>
-          <div class="item-info">
-            <div class="item-name">
-              <?= htmlspecialchars($it[$nc] ?? $it['name_de'] ?? '') ?>
-              <?php if ($it['is_mandatory']): ?>
-                <span class="mandatory-tag"><?= __('mandatory_label') ?></span>
+      <?php if (!empty($g['is_segment'])): ?>
+        <div class="segment-row">
+          <span class="segment-row-label"><?= htmlspecialchars($g[$slc] ?? $g['segment_label_de'] ?? '') ?></span>
+          <div class="segment-buttons">
+            <?php foreach ($globalItems as $it): ?>
+              <button type="button" class="seg-btn" id="iseg_<?= $it['id'] ?>"
+                      onclick="segClick(<?= $it['id'] ?>)" <?= $isCompleted ? 'disabled' : '' ?>>
+                <?= htmlspecialchars($it[$blc] ?? $it[$nc] ?? $it['name_de'] ?? '') ?>
+              </button>
+            <?php endforeach ?>
+          </div>
+        </div>
+        <?php foreach ($globalItems as $it): $iid = $it['id']; $sv = $savedCodes[$it['goz_code']] ?? null; ?>
+          <div id="icard_<?= $iid ?>" style="display:none"></div>
+          <span id="ibadge_<?= $iid ?>" style="display:none"></span>
+          <div id="iactions_<?= $iid ?>" style="display:none"></div>
+          <div class="factor-panel" id="ifactor_<?= $iid ?>" style="display:none">
+            <div style="padding:.85rem 1.25rem 0">
+              <div class="factor-row">
+                <span class="factor-label"><?= __('factor_label') ?>:</span>
+                <div class="factor-ctrl">
+                  <button class="fac-btn" onclick="adjFactor(<?= $iid ?>,-0.1)">−</button>
+                  <input type="number" class="fac-val" id="ifval_<?= $iid ?>"
+                         value="<?= number_format($sv ? (float)$sv['factor'] : (float)$it['factor_default'], 2, '.', '') ?>"
+                         min="<?= $it['factor_min'] ?>" max="<?= $it['factor_max'] ?>" step="0.1"
+                         oninput="onFactorInput(<?= $iid ?>)">
+                  <button class="fac-btn" onclick="adjFactor(<?= $iid ?>,0.1)">+</button>
+                </div>
+                <span class="fac-range" id="ifrange_<?= $iid ?>"><?= $it['factor_min'] ?> – <?= $it['factor_max'] ?></span>
+                <span class="fac-high" id="ifhigh_<?= $iid ?>" style="display:none">▲ <?= __('mot_hint') ?></span>
+              </div>
+              <div class="mot-wrap" id="imot_<?= $iid ?>" style="display:none">
+                <label>⚠ <?= __('motivation_label') ?> *</label>
+                <textarea id="imottext_<?= $iid ?>" placeholder="<?= htmlspecialchars(__('motivation_placeholder')) ?>"></textarea>
+              </div>
+            </div>
+          </div>
+        <?php endforeach ?>
+      <?php else: ?>
+        <?php foreach ($globalItems as $it):
+          $iid = $it['id'];
+          $sv  = $savedCodes[$it['goz_code']] ?? null;
+          $initSt = $sv ? 'confirmed' : (($it['is_mandatory'] || $it['is_proposed']) ? 'proposed' : 'available');
+        ?>
+        <div class="item-card" id="icard_<?= $iid ?>">
+          <div class="item-top">
+            <span class="item-badge" id="ibadge_<?= $iid ?>">GOZ <?= htmlspecialchars($it['goz_code']) ?></span>
+            <div class="item-info">
+              <div class="item-name">
+                <?= htmlspecialchars($it[$nc] ?? $it['name_de'] ?? '') ?>
+                <?php if ($it['is_mandatory']): ?>
+                  <span class="mandatory-tag"><?= __('mandatory_label') ?></span>
+                <?php endif ?>
+              </div>
+              <?php if (!empty($it[$sc2])): ?>
+                <div class="item-suggestion"><?= htmlspecialchars($it[$sc2]) ?></div>
               <?php endif ?>
+              <div class="blocked-reason" id="iblocked_<?= $iid ?>" style="display:none"></div>
             </div>
-            <?php if (!empty($it[$sc2])): ?>
-              <div class="item-suggestion"><?= htmlspecialchars($it[$sc2]) ?></div>
-            <?php endif ?>
-            <div class="blocked-reason" id="iblocked_<?= $iid ?>" style="display:none"></div>
-          </div>
-          <div class="item-actions" id="iactions_<?= $iid ?>">
-            <!-- rendered by JS -->
-          </div>
-        </div>
-        <?php if ($it['is_mandatory']): ?>
-        <div class="mand-mot-block" id="imandmot_<?= $iid ?>" style="<?= !empty($savedMandSkipped[$iid]) ? '' : 'display:none' ?>">
-          <label>⚠ <?= __('mandatory_skip_reason') ?></label>
-          <textarea id="imandmottext_<?= $iid ?>" oninput="onMandMotInput()" placeholder="<?= htmlspecialchars(__('mandatory_skip_placeholder')) ?>"><?= htmlspecialchars($savedMandSkipped[$iid] ?? '') ?></textarea>
-        </div>
-        <?php endif ?>
-        <div class="factor-panel" id="ifactor_<?= $iid ?>" style="display:none">
-          <div class="factor-row">
-            <span class="factor-label"><?= __('factor_label') ?>:</span>
-            <div class="factor-ctrl">
-              <button class="fac-btn" onclick="adjFactor(<?= $iid ?>,-0.1)">−</button>
-              <input type="number" class="fac-val" id="ifval_<?= $iid ?>"
-                     value="<?= number_format($sv ? (float)$sv['factor'] : (float)$it['factor_default'], 2, '.', '') ?>"
-                     min="<?= $it['factor_min'] ?>" max="<?= $it['factor_max'] ?>" step="0.1"
-                     oninput="onFactorInput(<?= $iid ?>)">
-              <button class="fac-btn" onclick="adjFactor(<?= $iid ?>,0.1)">+</button>
+            <div class="item-actions" id="iactions_<?= $iid ?>">
+              <!-- rendered by JS -->
             </div>
-            <span class="fac-range" id="ifrange_<?= $iid ?>"><?= $it['factor_min'] ?> – <?= $it['factor_max'] ?></span>
-            <span class="fac-high" id="ifhigh_<?= $iid ?>" style="display:none">▲ <?= __('mot_hint') ?></span>
           </div>
-          <div class="mot-wrap" id="imot_<?= $iid ?>" style="display:none">
-            <label>⚠ <?= __('motivation_label') ?> *</label>
-            <textarea id="imottext_<?= $iid ?>" placeholder="<?= htmlspecialchars(__('motivation_placeholder')) ?>"></textarea>
+          <?php if ($it['is_mandatory']): ?>
+          <div class="mand-mot-block" id="imandmot_<?= $iid ?>" style="<?= !empty($savedMandSkipped[$iid]) ? '' : 'display:none' ?>">
+            <label>⚠ <?= __('mandatory_skip_reason') ?></label>
+            <textarea id="imandmottext_<?= $iid ?>" oninput="onMandMotInput()" placeholder="<?= htmlspecialchars(__('mandatory_skip_placeholder')) ?>"><?= htmlspecialchars($savedMandSkipped[$iid] ?? '') ?></textarea>
+          </div>
+          <?php endif ?>
+          <div class="factor-panel" id="ifactor_<?= $iid ?>" style="display:none">
+            <div class="factor-row">
+              <span class="factor-label"><?= __('factor_label') ?>:</span>
+              <div class="factor-ctrl">
+                <button class="fac-btn" onclick="adjFactor(<?= $iid ?>,-0.1)">−</button>
+                <input type="number" class="fac-val" id="ifval_<?= $iid ?>"
+                       value="<?= number_format($sv ? (float)$sv['factor'] : (float)$it['factor_default'], 2, '.', '') ?>"
+                       min="<?= $it['factor_min'] ?>" max="<?= $it['factor_max'] ?>" step="0.1"
+                       oninput="onFactorInput(<?= $iid ?>)">
+                <button class="fac-btn" onclick="adjFactor(<?= $iid ?>,0.1)">+</button>
+              </div>
+              <span class="fac-range" id="ifrange_<?= $iid ?>"><?= $it['factor_min'] ?> – <?= $it['factor_max'] ?></span>
+              <span class="fac-high" id="ifhigh_<?= $iid ?>" style="display:none">▲ <?= __('mot_hint') ?></span>
+            </div>
+            <div class="mot-wrap" id="imot_<?= $iid ?>" style="display:none">
+              <label>⚠ <?= __('motivation_label') ?> *</label>
+              <textarea id="imottext_<?= $iid ?>" placeholder="<?= htmlspecialchars(__('motivation_placeholder')) ?>"></textarea>
+            </div>
           </div>
         </div>
-      </div>
-      <?php endforeach ?>
+        <?php endforeach ?>
+      <?php endif ?>
     </div>
   <?php endforeach ?>
+  </div><!-- /#staticItemGroups -->
 
   <?php endif ?>
 </div>
@@ -697,7 +852,7 @@ canvas#sigCanvas{display:block;width:100%;height:160px;touch-action:none}
     <div class="card-header"><?= __('billing_title') ?></div>
     <div style="padding:.75rem 1.25rem 1.25rem">
       <table class="billing-table" id="billingTable">
-        <thead>
+        <thead id="billingHead">
           <tr>
             <th><?= __('billing_code') ?></th>
             <th><?= __('billing_desc') ?></th>
@@ -757,7 +912,10 @@ const APP = {
   treatDate:   '<?= date('d-m-Y', strtotime($appt['scheduled_at'])) ?>',
   treatType:   '<?= addslashes($appt['type_name'] ?? '') ?>',
   toothSelectionMode: '<?= $appt['tooth_selection_mode'] ?? 'not_applicable' ?>',
-  selectedTeeth: <?= json_encode($savedTeeth, JSON_UNESCAPED_UNICODE) ?>,
+  selectedTeeth:     <?= json_encode($savedTeeth,       JSON_UNESCAPED_UNICODE) ?>,
+  savedTeethCodes:   <?= json_encode($savedTeethCodes,  JSON_UNESCAPED_UNICODE) ?>,
+  isEndoType:        <?= $isEndoType ? 'true' : 'false' ?>,
+  savedToothMeta:    <?= json_encode($savedToothMeta,   JSON_UNESCAPED_UNICODE) ?>,
   lang: '<?= $lang ?>',
 };
 
@@ -821,6 +979,27 @@ const T = {
   dcHint:        '<?= addslashes(__('dc_hint')) ?>',
   dcErrorSingle:   '<?= addslashes(__('dc_error_single')) ?>',
   dcErrorMultiple: '<?= addslashes(__('dc_error_multiple')) ?>',
+  mandatorySkipReason:      '<?= addslashes(__('mandatory_skip_reason')) ?>',
+  mandatorySkipPlaceholder: '<?= addslashes(__('mandatory_skip_placeholder')) ?>',
+  factorLabel:              '<?= addslashes(__('factor_label')) ?>',
+  motivationLabel:          '<?= addslashes(__('motivation_label')) ?>',
+  motivationPlaceholder:    '<?= addslashes(__('motivation_placeholder')) ?>',
+  mandatoryLabel:           '<?= addslashes(__('mandatory_label')) ?>',
+  billingTooth:             '<?= addslashes(__('billing_tooth')) ?>',
+  endoDocTitle:             '<?= addslashes(__('endo_doc_title')) ?>',
+  endoCanalCount:           '<?= addslashes(__('endo_canal_count')) ?>',
+  endoCanalQtyNote:         '<?= addslashes(__('endo_canal_qty_note')) ?>',
+  endoStage:                '<?= addslashes(__('endo_stage')) ?>',
+  endoStage1:               '<?= addslashes(__('endo_stage_1')) ?>',
+  endoStage2:               '<?= addslashes(__('endo_stage_2')) ?>',
+  endoStageFinal:           '<?= addslashes(__('endo_stage_final')) ?>',
+  endoXray:                 '<?= addslashes(__('endo_xray')) ?>',
+  endoTempClosure:          '<?= addslashes(__('endo_temp_closure')) ?>',
+  endoMedication:           '<?= addslashes(__('endo_medication')) ?>',
+  endoComplications:        '<?= addslashes(__('endo_complications')) ?>',
+  endoFollowUp:             '<?= addslashes(__('endo_follow_up')) ?>',
+  endoComplicationsPh:      '<?= addslashes(__('endo_complications_ph')) ?>',
+  endoFollowUpPh:           '<?= addslashes(__('endo_follow_up_ph')) ?>',
 };
 
 // ── State ───────────────────────────────────────────────────────────────────
@@ -839,6 +1018,8 @@ const state = {
   },
   items: {},       // id → { status, factor, motivation }
   blockedBy: {},   // id → Set of blocker ids
+  teethItems: {},  // toothNum → { items: { id: {...} }, blockedBy: { id: Set } }
+  toothMeta: {},   // toothNum → { canal_count, stage, xray, temp_closure, medication, complications, follow_up }
   saving: false,
   sigCanvas: null,
   sigCtx: null,
@@ -848,34 +1029,68 @@ const state = {
   selectedTeeth: Array.isArray(APP.selectedTeeth) ? APP.selectedTeeth.slice() : [],
 };
 
-// Initialize items
+// Initialize items — only global items (bill_per_tooth=false) go into state.items
 APP.items.forEach(it => {
-  state.items[it.id] = {
-    status:     it.status,
-    factor:     it.factor,
-    motivation: '',
-    goz_code:   it.goz_code,
-    name:       it.name,
-    fmin:       it.fmin,
-    fmax:       it.fmax,
-    fdef:       it.fdef,
-    fee_base:   it.fee_base,
-    mot_req:    it.mot_req,
-    mandatory:  it.mandatory,
-    proposed:   it.proposed,
-    excl:       it.excl,
-  };
+  if (APP.toothSelectionMode === 'not_applicable' || !it.bill_per_tooth) {
+    state.items[it.id] = {
+      status:       it.status,
+      factor:       it.factor,
+      motivation:   '',
+      goz_code:     it.goz_code,
+      name:         it.name,
+      fmin:         it.fmin,
+      fmax:         it.fmax,
+      fdef:         it.fdef,
+      fee_base:     it.fee_base,
+      mot_req:      it.mot_req,
+      mandatory:    it.mandatory,
+      proposed:     it.proposed,
+      excl:         it.excl,
+      is_per_canal: it.is_per_canal || false,
+    };
+  }
 });
 </script>
-<script src="/easydent/dental_chart.js"></script>
-<script src="/easydent/behandeling.js"></script>
+<script src="/easydent/dental_chart.js?v=<?= filemtime(__DIR__.'/dental_chart.js') ?>"></script>
+<script src="/easydent/behandeling.js?v=<?= filemtime(__DIR__.'/behandeling.js') ?>"></script>
 <script>
-// Boot
-APP.items.forEach(it => {
-  if (state.items[it.id].status === 'confirmed') applyExclusions(it.id, true);
+// Seed saved endo meta (na laden behandeling.js zodat _defaultEndoMeta beschikbaar is)
+if (APP.savedToothMeta) {
+  Object.entries(APP.savedToothMeta).forEach(([tn, meta]) => {
+    state.toothMeta[tn] = Object.assign(_defaultEndoMeta(), meta);
+  });
+}
+
+// Boot: exclusies toepassen voor globale items (bill_per_tooth=false)
+getGlobalItems().forEach(it => {
+  if (state.items[it.id] && state.items[it.id].status === 'confirmed') applyExclusions(it.id, true);
 });
+
+// Per-tand status initialiseren (ook voor afgeronde behandelingen)
+if (APP.toothSelectionMode !== 'not_applicable' && state.selectedTeeth.length > 0) {
+  syncTeethItems();
+}
+
 goToStep(APP.isCompleted ? 5 : 1);
 if (APP.isCompleted) buildBilling();
+
+// Tandkaart initialiseren (alleen bij niet-afgeronde behandelingen)
+if (!APP.isCompleted && typeof DentalChart !== 'undefined' && document.getElementById('dcPanel')) {
+  DentalChart.init('dcPanel', {
+    mode:     APP.toothSelectionMode === 'required_single' ? 'single' : 'multiple',
+    lang:     APP.lang,
+    selected: state.selectedTeeth,
+    onChange: function(teeth) {
+      state.selectedTeeth = teeth;
+      var err = document.getElementById('dcError');
+      if (err) err.style.display = 'none';
+      syncTeethItems();
+      renderToothPanels();
+      updateProgress();
+      updateMandatoryAlert();
+    },
+  });
+}
 </script>
 <?php $csrf = $csrf ?? csrfToken(); include __DIR__ . '/config/feedback_widget.php'; ?>
 </body>

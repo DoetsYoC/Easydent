@@ -14,7 +14,7 @@
  *   DentalChart.getSelected()  → [{toothNumber:'14', name:'1. Prämolar'}, ...]
  *   DentalChart.setSelected([{toothNumber:'14'}])
  */
-const DentalChart = (() => {
+window.DentalChart = (() => {
 
   // ── Tooth data ────────────────────────────────────────────────────────────
   // q = FDI quadrant (1=upper-right, 2=upper-left, 3=lower-left, 4=lower-right)
@@ -65,12 +65,13 @@ const DentalChart = (() => {
   const ROW_LOWER_R = ['31','32','33','34','35','36','37','38']; // Q3
 
   // ── State ─────────────────────────────────────────────────────────────────
-  let _el   = null;
-  let _mode = 'multiple';
-  let _lang = 'de';
-  let _sel  = new Set();
-  let _cb   = null;
-  let _L    = {};
+  let _el        = null;
+  let _mode      = 'multiple';
+  let _lang      = 'de';
+  let _sel       = new Set();
+  let _cb        = null;
+  let _L         = {};
+  let _showNames = true;
 
   // ── Public API ────────────────────────────────────────────────────────────
 
@@ -116,13 +117,18 @@ const DentalChart = (() => {
   function _render() {
     var multi = _mode === 'multiple';
     var quickBtns = multi ? (
-      '<button class="dc-qbtn" onclick="DentalChart._q(\'all\')">'   + _esc(_L.selectAll)  + '</button>' +
-      '<button class="dc-qbtn" onclick="DentalChart._q(\'upper\')">' + _esc(_L.upperJaw)   + '</button>' +
-      '<button class="dc-qbtn" onclick="DentalChart._q(\'lower\')">' + _esc(_L.lowerJaw)   + '</button>' +
-      '<button class="dc-qbtn" onclick="DentalChart._q(\'q1\')">Q1</button>' +
-      '<button class="dc-qbtn" onclick="DentalChart._q(\'q2\')">Q2</button>' +
-      '<button class="dc-qbtn" onclick="DentalChart._q(\'q3\')">Q3</button>' +
-      '<button class="dc-qbtn" onclick="DentalChart._q(\'q4\')">Q4</button>'
+      '<div class="dc-btn-row">' +
+        '<button class="dc-qbtn" onclick="DentalChart._q(\'all\')">'   + _esc(_L.selectAll) + '</button>' +
+        '<button class="dc-qbtn" onclick="DentalChart._q(\'upper\')">' + _esc(_L.upperJaw)  + '</button>' +
+        '<button class="dc-qbtn" onclick="DentalChart._q(\'lower\')">' + _esc(_L.lowerJaw)  + '</button>' +
+      '</div>' +
+      '<div class="dc-btn-row">' +
+        '<button class="dc-qbtn" onclick="DentalChart._q(\'q1\')">Q1</button>' +
+        '<button class="dc-qbtn" onclick="DentalChart._q(\'q2\')">Q2</button>' +
+        '<button class="dc-qbtn" onclick="DentalChart._q(\'q3\')">Q3</button>' +
+        '<button class="dc-qbtn" onclick="DentalChart._q(\'q4\')">Q4</button>' +
+        '<button class="dc-qbtn dc-qbtn-clear" onclick="DentalChart._q(\'clear\')">' + _esc(_L.clear) + '</button>' +
+      '</div>'
     ) : '';
 
     _el.innerHTML =
@@ -149,11 +155,15 @@ const DentalChart = (() => {
         '</div>' +
 
         '<div class="dc-sidebar">' +
-          '<div class="dc-sel-label">' + _esc(_L.selected) + '</div>' +
+          '<div class="dc-sel-header">' +
+            '<span class="dc-sel-label">' + _esc(_L.selected) + '</span>' +
+            '<button class="dc-names-toggle" id="dc-names-toggle" onclick="DentalChart._toggleNames()">' +
+              _esc(_showNames ? _L.hideNames : _L.showNames) +
+            '</button>' +
+          '</div>' +
           '<div class="dc-chips" id="dc-chips"></div>' +
           '<div class="dc-actions">' +
             quickBtns +
-            '<button class="dc-qbtn dc-qbtn-clear" onclick="DentalChart._q(\'clear\')">' + _esc(_L.clear) + '</button>' +
           '</div>' +
           '<p class="dc-hint">' + _esc(_L.hint) + '</p>' +
         '</div>' +
@@ -189,13 +199,21 @@ const DentalChart = (() => {
       el.innerHTML = '<span class="dc-chips-empty">' + _esc(_L.none) + '</span>';
       return;
     }
+    var nameClass = _showNames ? 'dc-chip-name' : 'dc-chip-name dc-hidden';
     el.innerHTML = Array.from(_sel).sort(_fdiSort).map(function(n) {
       return '<span class="dc-chip">' +
         '<span class="dc-chip-num">' + n + '</span>' +
-        '<span class="dc-chip-name">' + _esc(_toothName(n)) + '</span>' +
+        '<span class="' + nameClass + '">' + _esc(_toothName(n)) + '</span>' +
         '<button class="dc-chip-x" onclick="DentalChart._t(\'' + n + '\')" title="verwijder">&#x2715;</button>' +
       '</span>';
     }).join('');
+  }
+
+  function _toggleNames() {
+    _showNames = !_showNames;
+    var btn = document.getElementById('dc-names-toggle');
+    if (btn) btn.textContent = _showNames ? _L.hideNames : _L.showNames;
+    _renderChips();
   }
 
   // ── Interaction ───────────────────────────────────────────────────────────
@@ -257,6 +275,19 @@ const DentalChart = (() => {
   function _defaultLabels(lang) {
     var L = {
       de: {
+        upperJaw:  'Oberkiefer',
+        lowerJaw:  'Unterkiefer',
+        right:     'Rechts',
+        left:      'Links',
+        selected:  'Ausgewählte Zähne',
+        none:      'Kein Zahn ausgewählt',
+        selectAll: 'Alle',
+        clear:     'Leeren',
+        showNames: 'Namen einblenden',
+        hideNames: 'Namen ausblenden',
+        hint:      'Tippen Sie auf einen Zahn, um ihn auszuwählen oder zu deselektieren.',
+      },
+      nl: {
         upperJaw:  'Bovenkaak',
         lowerJaw:  'Onderkaak',
         right:     'Rechts',
@@ -264,25 +295,28 @@ const DentalChart = (() => {
         selected:  'Geselecteerde tanden',
         none:      'Geen tanden geselecteerd',
         selectAll: 'Alles',
-        clear:     'Wis selectie',
+        clear:     'Wis',
+        showNames: 'Namen tonen',
+        hideNames: 'Namen verbergen',
         hint:      'Tik op een tand om te selecteren of deselecteren.',
       },
+      en: {
+        upperJaw:  'Upper jaw',
+        lowerJaw:  'Lower jaw',
+        right:     'Right',
+        left:      'Left',
+        selected:  'Selected teeth',
+        none:      'No teeth selected',
+        selectAll: 'All',
+        clear:     'Clear',
+        showNames: 'Show names',
+        hideNames: 'Hide names',
+        hint:      'Tap a tooth to select or deselect.',
+      },
     };
-    L.nl = L.de;
-    L.en = {
-      upperJaw:  'Upper jaw',
-      lowerJaw:  'Lower jaw',
-      right:     'Right',
-      left:      'Left',
-      selected:  'Selected teeth',
-      none:      'No teeth selected',
-      selectAll: 'All',
-      clear:     'Clear',
-      hint:      'Tap a tooth to select or deselect.',
-    };
-    return L[lang] || L.de;
+    return L[lang] || L.nl;
   }
 
-  return { init: init, getSelected: getSelected, setSelected: setSelected, _t: _t, _q: _q };
+  return { init: init, getSelected: getSelected, setSelected: setSelected, _t: _t, _q: _q, _toggleNames: _toggleNames };
 
 })();

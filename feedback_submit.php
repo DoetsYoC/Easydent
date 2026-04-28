@@ -30,8 +30,9 @@ if (!function_exists('curl_init')) {
     exit;
 }
 
-$user     = currentUser();
-$userName = $user['display_name'] ?? 'Onbekend';
+$user         = currentUser();
+$postedName   = trim($_POST['name'] ?? '');
+$userName     = $postedName !== '' ? $postedName : ($user['display_name'] ?? 'Onbekend');
 $userRole = $user['role']         ?? '';
 $dateStr  = date('d-m-Y H:i');
 

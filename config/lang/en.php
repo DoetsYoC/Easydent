@@ -153,6 +153,12 @@ return [
     'dc_select_all'      => 'All',
     'dc_clear'           => 'Clear',
     'dc_hint'            => 'Tap a tooth to select or deselect.',
+    'dc_hint_single'     => 'Tap exactly one tooth that will be treated.',
+    'dc_hint_multiple'   => 'Tap each tooth that will be treated. Multiple selection possible.',
+    'dc_hint_optional'   => 'Optional: tap a tooth to link it to this treatment.',
+    'dc_subtitle_single'   => 'Select exactly 1 tooth',
+    'dc_subtitle_multiple' => 'Select 1 or more teeth',
+    'dc_subtitle_optional' => 'Optional selection',
     'dc_error_single'    => 'Please select exactly one tooth to continue.',
     'dc_error_multiple'  => 'Please select at least one tooth to continue.',
     'tt_none'              => 'No treatment types yet.',
@@ -185,6 +191,7 @@ return [
     'ti_proposed'          => 'Proposed when opening treatment',
     'ti_mandatory'         => 'Mandatory item (cannot be deselected)',
     'ti_motivation_req'    => 'Motivation required when factor exceeds default',
+    'ti_bill_per_tooth'    => 'Bill per tooth (one row per selected tooth)',
     'ti_suggestion'        => 'Suggestion text for practitioner',
     'ti_suggestion_de'     => 'Suggestion (German)',
     'ti_suggestion_nl'     => 'Suggestion (Dutch)',
@@ -371,6 +378,8 @@ return [
     'no_sessions'          => 'No treatments found.',
 
     // Feedback widget
+    'fb_name'              => 'Your name',
+    'fb_name_ph'           => 'Enter your name',
     'fb_btn'               => 'Feedback',
     'fb_title'             => 'Report feedback or issue',
     'fb_subject'           => 'Subject *',
@@ -405,4 +414,23 @@ return [
     'billing_h_qty'        => 'Quantity',
     'billing_h_factor'     => 'Factor',
     'billing_h_grand_total'=> 'Grand total',
+
+    // Per-tooth billing
+    'billing_tooth'        => 'Tooth',
+
+    // Endodontics — clinical documentation
+    'endo_doc_title'       => 'Clinical documentation',
+    'endo_canal_count'     => 'Number of canals',
+    'endo_stage'           => 'Treatment stage',
+    'endo_stage_1'         => 'Visit 1',
+    'endo_stage_2'         => 'Visit 2',
+    'endo_stage_final'     => 'Completion',
+    'endo_xray'            => 'X-ray taken',
+    'endo_temp_closure'    => 'Temporary filling',
+    'endo_medication'      => 'Medication dressing',
+    'endo_complications'   => 'Complications / findings',
+    'endo_follow_up'       => 'Follow-up / recommendations',
+    'endo_complications_ph'=> 'Optional notes on complications or clinical findings …',
+    'endo_follow_up_ph'    => 'Follow-up recommendations …',
+    'endo_canal_qty_note'  => 'canals (quantity for billing)',
 ];

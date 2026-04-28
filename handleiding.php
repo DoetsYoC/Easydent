@@ -782,5 +782,6 @@ function setLang(lang) {
 
 setLang('de');
 </script>
+<?php include __DIR__ . '/config/bg_pattern.php'; ?>
 </body>
 </html>

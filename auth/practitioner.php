@@ -88,5 +88,6 @@ $csrf = csrfToken();
     <a href="/easydent/auth/login.php" style="font-size:.78rem;color:#94a3b8;font-weight:500"><?= __('login_as_manager') ?></a>
   </div>
 </div>
+
 </body>
 </html>

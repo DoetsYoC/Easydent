@@ -154,6 +154,12 @@ return [
     'dc_select_all'      => 'Alle',
     'dc_clear'           => 'Auswahl leeren',
     'dc_hint'            => 'Tippen Sie auf einen Zahn, um ihn auszuwählen oder zu deselektieren.',
+    'dc_hint_single'     => 'Tippen Sie auf genau einen Zahn, der behandelt wird.',
+    'dc_hint_multiple'   => 'Tippen Sie auf jeden Zahn, der behandelt wird. Mehrfachauswahl möglich.',
+    'dc_hint_optional'   => 'Optional: Tippen Sie auf einen Zahn, um ihn zu verknüpfen.',
+    'dc_subtitle_single'   => 'Wählen Sie genau 1 Zahn',
+    'dc_subtitle_multiple' => 'Wählen Sie 1 oder mehr Zähne',
+    'dc_subtitle_optional' => 'Optionale Auswahl',
     'dc_error_single'    => 'Bitte genau einen Zahn auswählen, um fortzufahren.',
     'dc_error_multiple'  => 'Bitte mindestens einen Zahn auswählen, um fortzufahren.',
     'tt_none'              => 'Noch keine Behandlungstypen.',
@@ -186,6 +192,7 @@ return [
     'ti_proposed'          => 'Vorgeschlagen beim Öffnen der Behandlung',
     'ti_mandatory'         => 'Pflichtleistung (kann nicht deaktiviert werden)',
     'ti_motivation_req'    => 'Begründung erforderlich bei Faktor über Standardwert',
+    'ti_bill_per_tooth'    => 'Pro Zahn abrechnen (eine Zeile pro gewähltem Zahn)',
     'ti_suggestion'        => 'Hinweistext für Behandler',
     'ti_suggestion_de'     => 'Hinweis (Deutsch)',
     'ti_suggestion_nl'     => 'Hinweis (Niederländisch)',
@@ -372,6 +379,8 @@ return [
     'no_sessions'          => 'Keine Behandlungen gefunden.',
 
     // Feedback-Widget
+    'fb_name'              => 'Ihr Name',
+    'fb_name_ph'           => 'Bitte Namen eingeben',
     'fb_btn'               => 'Feedback',
     'fb_title'             => 'Feedback oder Problem melden',
     'fb_subject'           => 'Betreff *',
@@ -406,4 +415,23 @@ return [
     'billing_h_qty'        => 'Anzahl',
     'billing_h_factor'     => 'Faktor',
     'billing_h_grand_total'=> 'Gesamtbetrag',
+
+    // Pro-Zahn-Abrechnung
+    'billing_tooth'        => 'Zahn',
+
+    // Endodontie — klinische Dokumentation
+    'endo_doc_title'       => 'Klinische Dokumentation',
+    'endo_canal_count'     => 'Anzahl Kanäle',
+    'endo_stage'           => 'Behandlungsabschnitt',
+    'endo_stage_1'         => 'Sitzung 1',
+    'endo_stage_2'         => 'Sitzung 2',
+    'endo_stage_final'     => 'Abschluss',
+    'endo_xray'            => 'Röntgenaufnahme',
+    'endo_temp_closure'    => 'Provisorische Füllung',
+    'endo_medication'      => 'Medikamenteneinlage',
+    'endo_complications'   => 'Komplikationen / Befund',
+    'endo_follow_up'       => 'Nachsorge / Hinweise',
+    'endo_complications_ph'=> 'Optionale Anmerkungen zu Komplikationen oder klinischem Befund …',
+    'endo_follow_up_ph'    => 'Empfehlungen für die Nachsorge …',
+    'endo_canal_qty_note'  => 'Kanäle (Anzahl für Abrechnung)',
 ];

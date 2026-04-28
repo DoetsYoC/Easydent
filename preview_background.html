@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Achtergrond preview — Easydent</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    background-color: #f1f5f9;
+  }
+
+  /* ── Demo UI erop ── */
+  .demo-topbar {
+    background: #1a2e4a;
+    padding: .75rem 1.25rem;
+    color: #fff;
+    font-size: .95rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+  }
+  .demo-badge {
+    background: #3aafa9;
+    font-size: .72rem;
+    padding: .2rem .6rem;
+    border-radius: 99px;
+  }
+  .demo-content {
+    max-width: 720px;
+    margin: 2rem auto;
+    padding: 0 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .demo-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    padding: 1.25rem;
+  }
+  .demo-card h3 {
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: .75rem;
+  }
+  .demo-row {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+  }
+  .demo-chip {
+    background: #e8f5f4;
+    border: 1.5px solid #3aafa9;
+    color: #2d9991;
+    border-radius: 99px;
+    padding: .3rem .75rem;
+    font-size: .82rem;
+    font-weight: 600;
+  }
+  .demo-btn {
+    background: #3aafa9;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: .6rem 1.25rem;
+    font-size: .875rem;
+    font-weight: 600;
+    cursor: default;
+  }
+
+  /* ── Slider ── */
+  .controls {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,.12);
+    font-size: .82rem;
+    color: #374151;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    min-width: 200px;
+  }
+  .controls strong { font-size: .78rem; font-weight: 700; color: #1a2e4a; }
+  .controls label { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+  .controls input[type=range] { width: 110px; accent-color: #3aafa9; }
+  .controls span { font-size: .75rem; color: #64748b; min-width: 32px; text-align: right; }
+</style>
+</head>
+<body id="previewBody">
+
+<div class="demo-topbar">
+  ← &nbsp; Müller, Anna (42 jr)
+  <span class="demo-badge">Endodontie</span>
+</div>
+
+<div class="demo-content">
+  <div class="demo-card">
+    <h3>Geselecteerde tanden</h3>
+    <div class="demo-row">
+      <span class="demo-chip">46</span>
+      <span class="demo-chip">36</span>
+    </div>
+  </div>
+  <div class="demo-card">
+    <h3>Behandelitems</h3>
+    <div style="display:flex;flex-direction:column;gap:.6rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem;border:1px solid #e2e8f0;border-radius:8px;background:#f0fdf4">
+        <span style="font-size:.9rem;font-weight:600">Aufbereitung Wurzelkanal</span>
+        <span style="font-size:.75rem;font-weight:700;color:#16a34a">✓ GOZ 2440</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.75rem;border:1px solid #e2e8f0;border-radius:8px">
+        <span style="font-size:.9rem;font-weight:600">Medikamentöse Einlage</span>
+        <span style="font-size:.75rem;font-weight:700;color:#64748b">GOZ 2460</span>
+      </div>
+    </div>
+  </div>
+  <div class="demo-card">
+    <h3>Declaratie</h3>
+    <div class="demo-row" style="justify-content:flex-end">
+      <button class="demo-btn">✓ Afronden</button>
+    </div>
+  </div>
+</div>
+
+<!-- Bedieningspaneel -->
+<div class="controls">
+  <strong>⚙ Patroon instellen</strong>
+  <label>
+    Zichtbaarheid
+    <input type="range" id="opacitySlider" min="4" max="30" value="12" oninput="updatePattern()">
+    <span id="opacityVal">12%</span>
+  </label>
+  <label>
+    Schaal
+    <input type="range" id="scaleSlider" min="60" max="200" value="110" oninput="updatePattern()">
+    <span id="scaleVal">110px</span>
+  </label>
+</div>
+
+<script>
+function updatePattern() {
+  const opacity = document.getElementById('opacitySlider').value / 100;
+  const s       = parseInt(document.getElementById('scaleSlider').value);
+
+  document.getElementById('opacityVal').textContent = Math.round(opacity * 100) + '%';
+  document.getElementById('scaleVal').textContent   = s + 'px';
+
+  const enc = encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}">` +
+    `<g fill="none" stroke="#3aafa9" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" opacity="${opacity}">` +
+
+    // Tand (linksboven)
+    `<path d="M${s*.225} ${s*.1}C${s*.175} ${s*.1} ${s*.1375} ${s*.1375} ${s*.1375} ${s*.1875}C${s*.1375} ${s*.2375} ${s*.15} ${s*.275} ${s*.1625} ${s*.3125}C${s*.175} ${s*.35} ${s*.175} ${s*.3875} ${s*.2} ${s*.3875}C${s*.2188} ${s*.3875} ${s*.225} ${s*.35} ${s*.225} ${s*.35}C${s*.225} ${s*.35} ${s*.2313} ${s*.3875} ${s*.25} ${s*.3875}C${s*.275} ${s*.3875} ${s*.275} ${s*.35} ${s*.2875} ${s*.3125}C${s*.3} ${s*.275} ${s*.3125} ${s*.2375} ${s*.3125} ${s*.1875}C${s*.3125} ${s*.1375} ${s*.275} ${s*.1} ${s*.225} ${s*.1}Z"/>` +
+    `<path d="M${s*.175} ${s*.175}Q${s*.225} ${s*.2} ${s*.275} ${s*.175}"/>` +
+
+    // Elektrische tandenborstel (rechtsboven, verticaal)
+    `<rect x="${s*.718}" y="${s*.07}" width="${s*.082}" height="${s*.098}" rx="${s*.024}"/>` +
+    `<line x1="${s*.731}" y1="${s*.068}" x2="${s*.731}" y2="${s*.042}"/>` +
+    `<line x1="${s*.749}" y1="${s*.064}" x2="${s*.749}" y2="${s*.037}"/>` +
+    `<line x1="${s*.768}" y1="${s*.064}" x2="${s*.768}" y2="${s*.037}"/>` +
+    `<line x1="${s*.786}" y1="${s*.068}" x2="${s*.786}" y2="${s*.042}"/>` +
+    `<rect x="${s*.728}" y="${s*.168}" width="${s*.062}" height="${s*.272}" rx="${s*.031}"/>` +
+    `<circle cx="${s*.759}" cy="${s*.263}" r="${s*.016}"/>` +
+
+    // Tandpasta tube 1 (midden-links, horizontaal)
+    `<rect x="${s*.04}" y="${s*.585}" width="${s*.292}" height="${s*.088}" rx="${s*.022}"/>` +
+    `<rect x="${s*.328}" y="${s*.597}" width="${s*.046}" height="${s*.064}" rx="${s*.013}"/>` +
+    `<line x1="${s*.374}" y1="${s*.629}" x2="${s*.398}" y2="${s*.629}"/>` +
+    `<line x1="${s*.068}" y1="${s*.594}" x2="${s*.068}" y2="${s*.664}"/>` +
+    `<line x1="${s*.083}" y1="${s*.594}" x2="${s*.083}" y2="${s*.664}"/>` +
+
+    // Tandpasta tube 2 (rechtsonder, gedraaid)
+    `<g transform="rotate(-22,${s*.685},${s*.795})">` +
+    `<rect x="${s*.508}" y="${s*.755}" width="${s*.27}" height="${s*.08}" rx="${s*.02}"/>` +
+    `<rect x="${s*.773}" y="${s*.767}" width="${s*.042}" height="${s*.056}" rx="${s*.012}"/>` +
+    `<line x1="${s*.815}" y1="${s*.795}" x2="${s*.838}" y2="${s*.795}"/>` +
+    `<line x1="${s*.529}" y1="${s*.763}" x2="${s*.529}" y2="${s*.827}"/>` +
+    `<line x1="${s*.543}" y1="${s*.763}" x2="${s*.543}" y2="${s*.827}"/>` +
+    `</g>` +
+
+    // Tandspiegeltje (linksonder)
+    `<circle cx="${s*.185}" cy="${s*.785}" r="${s*.057}"/>` +
+    `<line x1="${s*.185}" y1="${s*.842}" x2="${s*.185}" y2="${s*.924}"/>` +
+    `<line x1="${s*.149}" y1="${s*.924}" x2="${s*.221}" y2="${s*.924}"/>` +
+
+    // Dein Dental logo mark (midden) — vereenvoudigd: cirkel + boog + steel
+    `<circle cx="${s*.515}" cy="${s*.44}" r="${s*.032}"/>` +
+    `<path d="M${s*.467} ${s*.386}A${s*.069} ${s*.069} 0 0 1 ${s*.585} ${s*.442}"/>` +
+    `<circle cx="${s*.462}" cy="${s*.379}" r="${s*.009}"/>` +
+    `<line x1="${s*.515}" y1="${s*.472}" x2="${s*.515}" y2="${s*.524}"/>` +
+    `<line x1="${s*.49}" y1="${s*.524}" x2="${s*.54}" y2="${s*.524}"/>` +
+
+    // Ster (midden-boven, tussen tand en borstel)
+    `<path d="M${s*.515} ${s*.12}L${s*.528} ${s*.155}L${s*.565} ${s*.167}L${s*.528} ${s*.179}L${s*.515} ${s*.214}L${s*.502} ${s*.179}L${s*.465} ${s*.167}L${s*.502} ${s*.155}Z"/>` +
+
+    `</g></svg>`
+  );
+
+  document.getElementById('previewBody').style.backgroundImage = `url("data:image/svg+xml,${enc}")`;
+  document.getElementById('previewBody').style.backgroundSize  = `${s}px ${s}px`;
+}
+updatePattern();
+</script>
+
+</body>
+</html>

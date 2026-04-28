@@ -101,6 +101,24 @@ function __(string $key, array $replace = []): string
     return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 }
 
+// ============================================================
+// Achtergrondpatroon — automatisch injecteren voor </body>
+// Patroon wordt éénmalig geladen bij include van helpers.php;
+// de callback zelf start geen geneste buffer (niet toegestaan
+// in PHP 7+). JSON-responses bevatten geen </body> en worden
+// dus nooit aangepast.
+// ============================================================
+(function () {
+    ob_start();
+    include __DIR__ . '/bg_pattern.php';
+    $pat = ob_get_clean();
+    ob_start(function (string $html) use ($pat): string {
+        $pos = strrpos($html, '</body>');
+        if ($pos === false) return $html;
+        return substr($html, 0, $pos) . $pat . substr($html, $pos);
+    });
+})();
+
 function langSwitcherHtml(string $currentPage = ''): string
 {
     $lang   = currentLang();

@@ -56,9 +56,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fMax    = min(5.0, max(0.5, (float) str_replace(',', '.', $_POST['factor_max']    ?? '3.50')));
     $fDef    = min(5.0, max(0.5, (float) str_replace(',', '.', $_POST['factor_default'] ?? '2.30')));
     $feeBase = max(0.0, (float) str_replace(',', '.', $_POST['fee_base'] ?? '0.00'));
-    $proposed  = isset($_POST['is_proposed'])         ? 1 : 0;
-    $mandatory = isset($_POST['is_mandatory'])         ? 1 : 0;
-    $motivReq  = isset($_POST['motivation_required'])  ? 1 : 0;
+    $proposed     = isset($_POST['is_proposed'])         ? 1 : 0;
+    $mandatory    = isset($_POST['is_mandatory'])         ? 1 : 0;
+    $motivReq     = isset($_POST['motivation_required'])  ? 1 : 0;
+    $billPerTooth = isset($_POST['bill_per_tooth'])        ? 1 : 0;
     $sugDe   = trim($_POST['suggestion_de'] ?? '');
     $sugNl   = trim($_POST['suggestion_nl'] ?? '');
     $sugEn   = trim($_POST['suggestion_en'] ?? '');
@@ -80,14 +81,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 UPDATE treatment_items
                 SET name_de=?, name_nl=?, name_en=?, goz_code=?,
                     factor_min=?, factor_max=?, factor_default=?, fee_base=?,
-                    is_proposed=?, is_mandatory=?, motivation_required=?,
+                    is_proposed=?, is_mandatory=?, motivation_required=?, bill_per_tooth=?,
                     suggestion_de=?, suggestion_nl=?, suggestion_en=?,
                     sort_order=?, active=?
                 WHERE id=?
             ")->execute([
                 $nameDe, $nameNl, $nameEn, $gozCode,
                 $fMin, $fMax, $fDef, $feeBase,
-                $proposed, $mandatory, $motivReq,
+                $proposed, $mandatory, $motivReq, $billPerTooth,
                 $sugDe ?: null, $sugNl ?: null, $sugEn ?: null,
                 $sort, $active, $itemId,
             ]);
@@ -97,13 +98,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 INSERT INTO treatment_items
                     (group_id, name_de, name_nl, name_en, goz_code,
                      factor_min, factor_max, factor_default, fee_base,
-                     is_proposed, is_mandatory, motivation_required,
+                     is_proposed, is_mandatory, motivation_required, bill_per_tooth,
                      suggestion_de, suggestion_nl, suggestion_en, sort_order)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ")->execute([
                 $groupId, $nameDe, $nameNl, $nameEn, $gozCode,
                 $fMin, $fMax, $fDef, $feeBase,
-                $proposed, $mandatory, $motivReq,
+                $proposed, $mandatory, $motivReq, $billPerTooth,
                 $sugDe ?: null, $sugNl ?: null, $sugEn ?: null, $sort,
             ]);
             $itemId = (int) $db->lastInsertId();
@@ -291,6 +292,12 @@ include __DIR__ . '/_layout.php';
             <label style="display:flex;align-items:center;gap:.5rem;font-weight:400;cursor:pointer">
               <input type="checkbox" name="motivation_required" value="1" <?= ($item['motivation_required'] ?? 0) ? 'checked' : '' ?>>
               <?= __('ti_motivation_req') ?>
+            </label>
+          </div>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:.5rem;font-weight:400;cursor:pointer">
+              <input type="checkbox" name="bill_per_tooth" value="1" <?= ($item['bill_per_tooth'] ?? 0) ? 'checked' : '' ?>>
+              <?= __('ti_bill_per_tooth') ?>
             </label>
           </div>
           <?php if ($itemId): ?>
